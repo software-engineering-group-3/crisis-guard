@@ -1,59 +1,77 @@
-Software Engineering
+# Crisis Guard
 
-2024/2025
+A web-app that notifies users of nearby extreme weather events.
 
-Crisis Guard
+# Project description
+This project is the result of a group project in the class [Software engineering](https://www.fer.unizg.hr/predmet/proinz) on the Faculty of Electrical Engineering and Computing in Zagreb.
 
-Documentation
+The project aims to inform citizens of nearby dangerous weather events and increase the response time of emergency services by allowing citizens to submit and view anonymous reports of extreme weather.
 
-Group: Group 3
-Leader: Juraj Velimirović
-Teacher: izv. prof. dr. sc. Vlado Sruk
+# Functional requirements
+## Goals
+- Notify users about incoming threats
+- Speed up information transfer to citizens
 
+## Functional elements
+- Secure login with OAuth
+- Integration with OpenSteetMap to show nearby reports and allow anonymous reporting
+- Push notifications and mail alerts about nearby weather events
+- Guide on recommended safety measures
 
-1. Documentation Change Log
-Rev.	Change Description	Authors	Date
-0.1	Initial draft of functional requirements and use cases	Borna Čović	23.10.2024.
+# Technologies
+## Front-end
+- Blazor with C#
+- OpenStreetMap
+- OAuth
 
+## Back-end
+- ASP.NET with C#
+- Push notifications with Firebase Cloud Messaging
+- Database with PostgresSQL
 
-2. Project Assignment Description
-Crisis Guard is a web application designed for crisis management. It offers secure login via OAuth 2.0 with Google and integrates with OpenStreetMap to display pins indicating reports and resources. The application fetches information on green areas, shelters, and essential resources such as sandbags, food, and water.
-Key Features:
-•	Notifications:
-o	Implemented via Firebase Cloud Messaging and email notifications.
-•	Database Management:
-o	Utilizes PostgreSQL for storing user data, reports, safety measures, and report locations.
-Purpose:
-Humanitarian organizations can view information about citizens' needs, such as accommodation, food, or medical assistance. This enables them to plan and coordinate their activities effectively during crisis situations. The application allows adding information about available resources and aid actions, improving cooperation between humanitarian organizations and authorities to better coordinate relief efforts and optimize resources.
-Authorities have access to all submissions through the app. Editors can review, approve, or reject submissions, analyze situations, link similar reports, and suggest additional resources or measures. Authorities can also generate statistical reports that include the number of reports, types of disasters, and the effectiveness of crisis responses.
+## Hosting
+- Hosted on Microsoft Azure
 
+# Team members 
 
+- Boris Miličević (front-end)
+- Oleg Sergeiev (databases)
+- Pavle Žuljević (databases)
+- Niko Škurla (back-end)
+- Borna Čović (documentation)
+- Juraj Velimirović (back-end)
 
-3. Software Specification
-3.1. Functional Requirements
-User Roles and Permissions:
-1.	Regular Users (Not Signed In):
-o	View the map and existing reports.
-o	Create reports anonymously.
-o	See the list of reports.
-2.	Signed-In Users:
-o	All capabilities of regular users.
-o	Receive notifications via Firebase Cloud Messaging and email.
-3.	Emergency Services:
-o	All capabilities of signed-in users.
-o	Create privileged (priority) reports.
-4.	Editors:
-o	All capabilities of emergency services.
-o	Remove and modify reports.
-o	Link similar reports.
-________________________________________
-3.1.1. Use Cases
-Use Case UC1: View Map and Reports
-•	Actor: Regular User
-•	Goal: View the map with pins indicating reports and resources.
-•	Preconditions: None.
-•	Basic Flow:
-1.	User opens the application.
-2.	System displays a map using OpenStreetMap.
-3.	Pins representing reports and resources are visible.
-•	Postconditions: User can view details by clicking on pins.
+# Contributions
+
+[add contributions here]
+
+# 📝 Code of Conduct
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+
+# 📝 License
+## Current
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
+
+This repository contains Open Educational Resources and is licensed under the terms of the Creative Commons license that allows non-commercial usage and distribution with mandatory attribution and a share-alike license. See: [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License HR][cc-by-nc-sa].
+>
+> ### Note:
+>
+> All packages are distributed under their own licenses.<br>
+> All materials  (images, models, animations, ...) are distributed under their own licenses.
+
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
+
+[cc-by-nc-sa]: https://creativecommons.org/licenses/by-nc/4.0/deed.hr 
+[cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
+[cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg
+
+## Original
+[![cc0-1.0][cc0-1.0-shield]][cc0-1.0]
+>
+>COPYING: All the content within this repository is dedicated to the public domain under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.
+>
+[![CC0-1.0][cc0-1.0-image]][cc0-1.0]
+
+[cc0-1.0]: https://creativecommons.org/licenses/by/1.0/deed.en
+[cc0-1.0-image]: https://licensebuttons.net/l/by/1.0/88x31.png
+[cc0-1.0-shield]: https://img.shields.io/badge/License-CC0--1.0-lightgrey.svg
