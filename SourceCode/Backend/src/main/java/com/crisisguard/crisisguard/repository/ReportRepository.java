@@ -62,7 +62,7 @@ public class ReportRepository {
             // Convert the list to a list of Report objects
             return results.stream().map(this::getReportModelFromDB).collect(Collectors.toList());
         }
-            catch (EmptyResultDataAccessException e) {
+        catch (EmptyResultDataAccessException e) {
             return null;
         }
     }

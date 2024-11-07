@@ -2,6 +2,7 @@ package com.crisisguard.crisisguard.repository;
 
 import com.crisisguard.crisisguard.models.Place;
 import com.crisisguard.crisisguard.models.Report;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -37,11 +38,16 @@ public class PlaceRepository {
     /** Read **/
 
     public Place getPlaceByID(int placeID) {
-        var result = jdbcClient.sql("SELECT * FROM place WHERE place_id = ?")
-                .param(placeID)
-                .query().singleRow();
+        try {
+            var result = jdbcClient.sql("SELECT * FROM place WHERE place_id = ?")
+                    .param(placeID)
+                    .query().singleRow();
 
-        return getPlaceModelFromDB(result);
+            return getPlaceModelFromDB(result);
+        }
+        catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     public Place getPlaceFromReport(Report report) {
@@ -55,15 +61,20 @@ public class PlaceRepository {
             throw new IllegalArgumentException("Place does not exist");
         }
 
-        jdbcClient.sql("UPDATE place SET name = ?, latitude = ?, longitude = ?, address = ? WHERE place_id = ?")
-                .param(place.placeTypeID())
-                .param(place.latitude())
-                .param(place.longitude())
-                .param(place.description())
-                .param(place.cityName())
-                .param(place.street())
-                .param(place.houseNumber())
-                .update();
+        try {
+            jdbcClient.sql("UPDATE place SET name = ?, latitude = ?, longitude = ?, address = ? WHERE place_id = ?")
+                    .param(place.placeTypeID())
+                    .param(place.latitude())
+                    .param(place.longitude())
+                    .param(place.description())
+                    .param(place.cityName())
+                    .param(place.street())
+                    .param(place.houseNumber())
+                    .update();
+        }
+        catch (EmptyResultDataAccessException e) {
+            throw new IllegalArgumentException("Place does not exist");
+        }
     }
 
     /** Delete **/
