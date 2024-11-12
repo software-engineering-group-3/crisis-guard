@@ -20,12 +20,12 @@ The project aims to inform citizens of nearby dangerous weather events and incre
 
 # Technologies
 ## Front-end
-- Blazor with C#
+- React
 - OpenStreetMap
 - OAuth
 
 ## Back-end
-- ASP.NET with C#
+- Spring with Java
 - Push notifications with Firebase Cloud Messaging
 - Database with PostgresSQL
 
@@ -35,9 +35,9 @@ The project aims to inform citizens of nearby dangerous weather events and incre
 # Team members 
 
 - Boris Miličević (front-end)
-- Oleg Sergeiev (databases)
+- Oleg Sergeiev (back-end)
 - Pavle Žuljević (databases)
-- Niko Škurla (back-end)
+- Niko Škurla (front-end)
 - Borna Čović (documentation)
 - Juraj Velimirović (back-end)
 
