@@ -5,7 +5,9 @@ A web-app that notifies users of nearby extreme weather events.
 # Project description
 This project is the result of a group project in the class [Software engineering](https://www.fer.unizg.hr/predmet/proinz) on the Faculty of Electrical Engineering and Computing in Zagreb.
 
-The project aims to inform citizens of nearby dangerous weather events and increase the response time of emergency services by allowing citizens to submit and view anonymous reports of extreme weather.
+CrisisGuard is an innovative disaster management platform designed to streamline reporting, response, and resource coordination during emergencies. The platform serves as a centralized hub for citizens, authorities, and humanitarian organizations, fostering real-time collaboration to mitigate disaster impacts and deliver timely assistance to affected communities.
+
+The application emphasizes accessibility, transparency, and efficiency in disaster response. It features a user-friendly interface that allows anyone, regardless of technical expertise, to report incidents, view critical updates, and access life-saving information. Authorities and organizations leverage CrisisGuard to coordinate resources effectively and maintain situational awareness during emergencies.
 
 # Functional requirements
 ## Goals
