@@ -1,0 +1,10 @@
+{
+	"userID": 10,
+	"reportID": 20,
+	"placeID": 0,
+	"time": "2023-02-21",
+	"disasterTypeID": 0,
+	"photoURL": "url",
+	"description": "desc",
+	"severity": 2
+}
