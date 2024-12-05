@@ -40,18 +40,16 @@ The back-end API URL is https://crisisguard-backend-server.azuremicroservices.io
 ## Hosting
 - Hosted on Microsoft Azure
 
-# Team members 
+# Team members and contributions
 
-- Boris Miličević (front-end)
-- Oleg Sergeiev (back-end)
-- Pavle Žuljević (databases)
-- Niko Škurla (front-end)
-- Borna Čović (documentation)
-- Juraj Velimirović (back-end)
+- Boris Miličević (front-end, documentation)
+- Oleg Sergeiev (back-end, authentication and diagrams)
+- Pavle Žuljević (databases, database description and diagrams)
+- Niko Škurla (front-end, documentation edits)
+- Borna Čović (initial documentation, diagrams and requirements, use cases)
+- Juraj Velimirović (back-end, system architecture definition, deployment)
 
 # Contributions
-
-[add contributions here]
 
 # 📝 Code of Conduct
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
