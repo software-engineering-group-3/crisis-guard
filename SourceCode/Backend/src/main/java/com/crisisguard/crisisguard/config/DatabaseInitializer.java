@@ -95,7 +95,7 @@ public class DatabaseInitializer {
         // Trim each statement and remove any leading/trailing whitespace
         for (String statement : insertStatements) {
             String trimmedStatement = statement.trim();
-            
+
             // Skip empty statements
             if (!trimmedStatement.isEmpty()) {
                 // Ensure the statement ends with a semicolon if it doesn't already
@@ -111,7 +111,9 @@ public class DatabaseInitializer {
                     jdbcClient.sql(trimmedStatement).update();
                     System.out.println("Successfully inserted data into table: " + tableName);
                 } catch (Exception e) {
-                    System.err.println("Error inserting data into table: " + tableName);
+                    System.out.println("Error inserting data into table: " + tableName);
+                    System.err.println(trimmedStatement + "\n---------------------------");
+
                     // e.printStackTrace();
                 }
             }
