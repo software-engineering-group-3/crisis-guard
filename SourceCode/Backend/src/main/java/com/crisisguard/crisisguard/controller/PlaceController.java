@@ -24,9 +24,9 @@ public class PlaceController {
 
     /** Read **/
 
-    @GetMapping("/{placeID}")
-    public Place getPlace(@PathVariable int placeID) {
-        var place = placeRepository.getPlaceByID(placeID);
+    @GetMapping("/{coords}")
+    public Place getPlace(@PathVariable String coords) {
+        var place = placeRepository.getPlace(coords);
 
         if (place == null) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Place not found");
@@ -49,10 +49,10 @@ public class PlaceController {
 
     /** Delete **/
 
-    @DeleteMapping("/delete/{placeID}")
-    public void deletePlace(@PathVariable int placeID) {
+    @DeleteMapping("/delete/{coords}")
+    public void deletePlace(@PathVariable String coords) {
         try {
-            placeRepository.deletePlace(placeID);
+            placeRepository.deletePlace(coords);
         }
         catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getMessage());

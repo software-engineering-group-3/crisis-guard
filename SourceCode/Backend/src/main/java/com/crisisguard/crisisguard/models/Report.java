@@ -1,14 +1,13 @@
 package com.crisisguard.crisisguard.models;
 
-import java.sql.Timestamp;
+import java.sql.Date;
 
 public record Report(
-        int userID,
-        int reportID,
-        int placeID,
-        Timestamp time,
-        int disasterTypeID,
-        String photoURL,
-        String description,
-        Severity severity
+        Severity report_severity,
+        String desc_report,
+        String photo,
+        int usr_id,
+        Date time_start,
+        String coords,
+        String type_dis_id
 ) {}

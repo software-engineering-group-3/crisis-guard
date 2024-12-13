@@ -19,28 +19,25 @@ public class PlaceRepository {
     /** Create **/
 
     public void addPlace(Place place) {
-        if (getPlaceByID(place.placeID()) != null) {
+        if (getPlace(place.coords()) != null) {
             throw new IllegalArgumentException("Place already exists");
         }
 
-        jdbcClient.sql("INSERT INTO place (place_id, type_place_id, latitude, longitude, desc, city_name, street, house_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-                .param(place.placeID())
-                .param(place.placeTypeID())
-                .param(place.latitude())
-                .param(place.longitude())
-                .param(place.description())
-                .param(place.cityName())
-                .param(place.street())
-                .param(place.houseNumber())
+        jdbcClient.sql("INSERT INTO place VALUES (?, ?, ?, ?, ?)")
+                .param(place.coords())
+                .param(place.house_num())
+                .param(place.type_place_id())
+                .param(place.post_num())
+                .param(place.name_street())
                 .update();
     }
 
     /** Read **/
 
-    public Place getPlaceByID(int placeID) {
+    public Place getPlace(String coords) {
         try {
-            var result = jdbcClient.sql("SELECT * FROM place WHERE place_id = ?")
-                    .param(placeID)
+            var result = jdbcClient.sql("SELECT * FROM place WHERE coords = ?")
+                    .param(coords)
                     .query().singleRow();
 
             return getPlaceModelFromDB(result);
@@ -51,25 +48,22 @@ public class PlaceRepository {
     }
 
     public Place getPlaceFromReport(Report report) {
-        return getPlaceByID(report.placeID());
+        return getPlace(report.coords());
     }
 
     /** Update **/
 
     public void updatePlace(Place place) {
-        if (getPlaceByID(place.placeID()) == null) {
+        if (getPlace(place.coords()) == null) {
             throw new IllegalArgumentException("Place does not exist");
         }
 
         try {
-            jdbcClient.sql("UPDATE place SET name = ?, latitude = ?, longitude = ?, address = ? WHERE place_id = ?")
-                    .param(place.placeTypeID())
-                    .param(place.latitude())
-                    .param(place.longitude())
-                    .param(place.description())
-                    .param(place.cityName())
-                    .param(place.street())
-                    .param(place.houseNumber())
+            jdbcClient.sql("UPDATE place SET house_num = ?, type_place_id = ?, post_num = ?, name_street = ? WHERE coords = ?")
+                    .param(place.house_num())
+                    .param(place.type_place_id())
+                    .param(place.post_num())
+                    .param(place.name_street())
                     .update();
         }
         catch (EmptyResultDataAccessException e) {
@@ -79,13 +73,13 @@ public class PlaceRepository {
 
     /** Delete **/
 
-    public void deletePlace(int placeID) {
-        if (getPlaceByID(placeID) == null) {
+    public void deletePlace(String coords) {
+        if (getPlace(coords) == null) {
             throw new IllegalArgumentException("Place does not exist");
         }
 
-        jdbcClient.sql("DELETE FROM place WHERE place_id = ?")
-                .param(placeID)
+        jdbcClient.sql("DELETE FROM place WHERE coords = ?")
+                .param(coords)
                 .update();
     }
 
@@ -97,14 +91,11 @@ public class PlaceRepository {
         }
 
         return new Place(
-                (int) result.get("place_id"),
+                (String) result.get("coords"),
+                (int) result.get("house_num"),
                 (int) result.get("type_place_id"),
-                (String) result.get("latitude"),
-                (String) result.get("longitude"),
-                (String) result.get("description"),
-                (String) result.get("city_name"),
-                (String) result.get("street"),
-                (String) result.get("house_number")
+                (int) result.get("post_num"),
+                (String) result.get("name_street")
         );
     }
 }

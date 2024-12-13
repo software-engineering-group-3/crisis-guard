@@ -127,7 +127,7 @@ public class DatabaseInitializer {
                     System.out.println("Error inserting data into table: " + tableName);
                     System.err.println(trimmedStatement + "\n---------------------------");
 
-                    // e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
         }
