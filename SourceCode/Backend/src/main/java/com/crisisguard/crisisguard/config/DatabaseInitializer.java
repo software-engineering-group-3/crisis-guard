@@ -24,14 +24,25 @@ public class DatabaseInitializer {
 
     @PostConstruct
     public void initializeDatabase() {
+        // Check if the database is already initialized
+        // If so, skip the initialization process
+
+        var report_metadata = jdbcClient.sql("SELECT * FROM information_schema.tables WHERE table_name = 'report'")
+                .query().listOfRows();
+
+        if (!report_metadata.isEmpty()) {
+            System.out.println("Database already initialized");
+            return;
+        }
+
         // Insert sample places
 
         String sqlScriptCreate = null;
         String sqlScriptFill = null;
         try {
-            
-            sqlScriptCreate = new String(Files.readAllBytes(Paths.get("SourceCode\\Backend\\src\\main\\resources\\database_sql.sql")));
-            sqlScriptFill = new String(Files.readAllBytes(Paths.get("SourceCode\\Backend\\src\\main\\resources\\fill_database.sql")));
+
+            sqlScriptCreate = new String(Files.readAllBytes(Paths.get(".\\resources\\database_sql.sql")));
+            sqlScriptFill = new String(Files.readAllBytes(Paths.get(".\\resources\\fill_database.sql")));
             System.out.println("Strings loaded successflly\n");
         } catch (Exception e) {
             // Ignore if file already exists
@@ -50,7 +61,7 @@ public class DatabaseInitializer {
                 //                                         .query()
                 //                                         .singleRow();
                 System.out.println("Fetched TYPE_PLACE data: " + result);
-            
+
             }
         } catch (Exception e) {
             System.out.println("Failed to fetch TYPE_PLACE data: " + e.getMessage());
@@ -78,6 +89,8 @@ public class DatabaseInitializer {
                 
                 // Execute the CREATE TABLE statement
                 try {
+                    jdbcClient.sql(trimmedStatement).update();
+
                     System.out.println("Successfully created table: " + 
                         extractTableName(trimmedStatement));
                 } catch (Exception e) {
