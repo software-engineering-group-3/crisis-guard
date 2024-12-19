@@ -1,0 +1,11 @@
+{
+  "name": "crisis-guard-frontend",
+  "version": "1.0.0",
+  "description": "Deploy as static HTML/CSS/JS",
+  "scripts": {
+    "start": "harp server --port $PORT"
+  },
+  "dependencies": {
+    "harp": "*"
+  }
+}
