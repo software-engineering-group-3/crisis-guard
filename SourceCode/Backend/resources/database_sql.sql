@@ -100,7 +100,7 @@ CREATE TABLE APP_USER (
   coords VARCHAR(255) NOT NULL,
   usr_type_id VARCHAR(255) NOT NULL,
   name_street VARCHAR(255) NOT NULL,
-  post_num INT NOT NULL,
+  post_num INT,
   PRIMARY KEY (usr_id),
   FOREIGN KEY (coords) REFERENCES PLACE(coords),
   FOREIGN KEY (usr_type_id) REFERENCES TYPE_USER(usr_type_id),
