@@ -10,10 +10,10 @@ CrisisGuard is an innovative disaster management platform designed to streamline
 The application emphasizes accessibility, transparency, and efficiency in disaster response. It features a user-friendly interface that allows anyone, regardless of technical expertise, to report incidents, view critical updates, and access life-saving information. Authorities and organizations leverage CrisisGuard to coordinate resources effectively and maintain situational awareness during emergencies.
 
 # Access information
-The website (including the front-end, back-end and database) is deployed on Azure. <br>
-You can access the website on https://witty-plant-075239c03.4.azurestaticapps.net/ <br>
+The website (including the front-end, back-end and database) is deployed on Heroku. <br>
+You can access the website on https://crisis-guard-frontend-d4ce1dc3fa0e.herokuapp.com/ <br>
 <br>
-The back-end API URL is https://crisisguard-backend-server.azuremicroservices.io
+The back-end API is available on https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/
 
 # Functional requirements
 ## Goals
