@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.Timestamp;
+import java.sql.Date;
 import java.util.List;
 
 @RestController
@@ -28,9 +28,9 @@ public class ReportController {
 
     /** Read **/
 
-    @GetMapping("/{reportID}")
-    public Report getReport(@PathVariable int reportID) {
-        var report = reportRepository.getReportByID(reportID);
+    @GetMapping("/{userID}/{timeStart}/{coords}/{typeDisID}")
+    public Report getReport(@PathVariable int userID, @PathVariable String timeStart, @PathVariable String coords, @PathVariable String typeDisID) {
+        var report = reportRepository.getReport(userID, Date.valueOf(timeStart), coords, typeDisID);
 
         if (report == null) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Report not found");
@@ -63,7 +63,7 @@ public class ReportController {
 
     @GetMapping("/dateRange/{start}/{end}")
     public List<Report> getReportsByDateRange(@PathVariable String start, @PathVariable String end) {
-        var reports = reportRepository.getReportsByDateRange(Timestamp.valueOf(start), Timestamp.valueOf(end));
+        var reports = reportRepository.getReportsByDateRange(Date.valueOf(start), Date.valueOf(end));
 
         if (reports == null) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Report not found");
@@ -86,10 +86,10 @@ public class ReportController {
 
     /** Delete **/
 
-    @DeleteMapping("/delete/{reportID}")
-    public void deleteReport(@PathVariable int reportID) {
+    @DeleteMapping("/delete/{userID}/{timeStart}/{coords}/{typeDisID}")
+    public void deleteReport(@PathVariable int userID, @PathVariable String timeStart, @PathVariable String coords, @PathVariable String typeDisID) {
         try {
-            reportRepository.deleteReport(reportID);
+            reportRepository.deleteReport(userID, Date.valueOf(timeStart), coords, typeDisID);
         }
         catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getMessage());
