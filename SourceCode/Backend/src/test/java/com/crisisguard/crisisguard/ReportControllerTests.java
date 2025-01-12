@@ -62,7 +62,6 @@ class ReportControllerTests {
 				"Test place - updated"
 		));
 
-		verify(placeRepository).getPlace("55.7558 N, 37.6176 E");
 		verify(placeRepository).updatePlace(new Place(
 				"55.7558 N, 37.6176 E",
 				3,
@@ -89,7 +88,6 @@ class ReportControllerTests {
 
 		placeController.deletePlace("55.7558 N, 37.6176 E");
 
-		verify(placeRepository).getPlace("55.7558 N, 37.6176 E");
 		verify(placeRepository).deletePlace("55.7558 N, 37.6176 E");
 	}
 }

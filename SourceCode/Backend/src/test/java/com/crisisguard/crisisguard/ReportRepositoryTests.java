@@ -57,7 +57,7 @@ class ReportRepositoryTests {
                 Severity.CRITICAL,
                 "Test report",
                 "photo.jpg",
-                1,
+                5,
                 Date.valueOf("2021-01-01"),
                 "55.7558 N, 37.6176 E",
                 "1"
