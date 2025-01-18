@@ -1,9 +1,13 @@
 package com.crisisguard.crisisguard.controller;
 
+import com.crisisguard.crisisguard.auth.CheckRole;
 import com.crisisguard.crisisguard.models.Report;
 import com.crisisguard.crisisguard.models.Severity;
 import com.crisisguard.crisisguard.repository.ReportRepository;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -13,9 +17,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/report")
 public class ReportController {
+    CheckRole checkRole;
     ReportRepository reportRepository;
 
-    public ReportController(ReportRepository reportRepository) {
+    public ReportController(ReportRepository reportRepository, CheckRole checkRole) {
+        this.checkRole = checkRole;
         this.reportRepository = reportRepository;
     }
 
@@ -75,7 +81,11 @@ public class ReportController {
     /** Update **/
 
     @PutMapping("/update")
-    public void updateReport(@RequestBody Report report) {
+    public void updateReport(@RequestBody Report report, @AuthenticationPrincipal OAuth2User user) {
+        if (!checkRole.isAuthority(user)) {
+            throw new ResponseStatusException(HttpStatusCode.valueOf(403), "You are not authorized to perform this action");
+        }
+
         try {
             reportRepository.updateReport(report);
         }
@@ -87,7 +97,11 @@ public class ReportController {
     /** Delete **/
 
     @DeleteMapping("/delete/{userID}/{timeStart}/{coords}/{typeDisID}")
-    public void deleteReport(@PathVariable int userID, @PathVariable String timeStart, @PathVariable String coords, @PathVariable String typeDisID) {
+    public void deleteReport(@PathVariable int userID, @PathVariable String timeStart, @PathVariable String coords, @PathVariable String typeDisID, @AuthenticationPrincipal OAuth2User user) {
+        if (!checkRole.isAuthority(user)) {
+            throw new ResponseStatusException(HttpStatusCode.valueOf(403), "You are not authorized to perform this action");
+        }
+
         try {
             reportRepository.deleteReport(userID, Date.valueOf(timeStart), coords, typeDisID);
         }

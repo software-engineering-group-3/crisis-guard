@@ -1,5 +1,6 @@
 package com.crisisguard.crisisguard;
 
+import com.crisisguard.crisisguard.auth.CheckRole;
 import com.crisisguard.crisisguard.controller.PlaceController;
 import com.crisisguard.crisisguard.controller.ReportController;
 import com.crisisguard.crisisguard.models.Place;
@@ -7,6 +8,7 @@ import com.crisisguard.crisisguard.models.Report;
 import com.crisisguard.crisisguard.models.Severity;
 import com.crisisguard.crisisguard.repository.PlaceRepository;
 import com.crisisguard.crisisguard.repository.ReportRepository;
+import com.crisisguard.crisisguard.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.web.servlet.MockMvc;
@@ -39,10 +42,18 @@ class ReportControllerTests {
 	@MockBean
 	private PlaceRepository placeRepository;
 
+	@MockBean
+	private CheckRole checkRole;
+
+	@MockBean
+	private OAuth2User user;
+
 	// Tests if the controller checks for existence of a Place before updating it
 	@Test
 	void updatePlace() throws Exception {
-		var placeController = new PlaceController(placeRepository);
+		when(checkRole.isOrganization(any())).thenReturn(true);
+
+		var placeController = new PlaceController(placeRepository, checkRole);
 
 		Place placeOld = new Place(
 				"55.7558 N, 37.6176 E",
@@ -51,7 +62,6 @@ class ReportControllerTests {
 				10000,
 				"Test place"
 		);
-
 		when(placeRepository.getPlace("55.7558 N, 37.6176 E")).thenReturn(placeOld);
 
 		placeController.updatePlace(new Place(
@@ -60,7 +70,7 @@ class ReportControllerTests {
 				2,
 				12222,
 				"Test place - updated"
-		));
+		), user);
 
 		verify(placeRepository).updatePlace(new Place(
 				"55.7558 N, 37.6176 E",
@@ -74,7 +84,9 @@ class ReportControllerTests {
 	// Tests if the controller successfully deletes a Place
 	@Test
 	void deletePlace() {
-		var placeController = new PlaceController(placeRepository);
+		when(checkRole.isOrganization(any())).thenReturn(true);
+
+		var placeController = new PlaceController(placeRepository, checkRole);
 
 		Place place = new Place(
 				"55.7558 N, 37.6176 E",
@@ -83,10 +95,9 @@ class ReportControllerTests {
 				10000,
 				"Test place"
 		);
-
 		when(placeRepository.getPlace("55.7558 N, 37.6176 E")).thenReturn(place);
 
-		placeController.deletePlace("55.7558 N, 37.6176 E");
+		placeController.deletePlace("55.7558 N, 37.6176 E", user);
 
 		verify(placeRepository).deletePlace("55.7558 N, 37.6176 E");
 	}
