@@ -35,36 +35,68 @@ const IncidentReport = () => {
   const [photo, setPhoto] = useState(null);
   const [manualLocationSet, setManualLocationSet] = useState(false);
   const [leaflet, setLeaflet] = useState(null);
+  const [user, setUser] = useState(null);
+
+  function logout() {
+    fetch('https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/logout', {
+      method: 'POST', // Spring Security requires a POST request for logout
+      credentials: 'include',
+    })
+      .then(() => {
+        window.location.href = '/'; // Redirect to the homepage after logout
+      })
+      .catch((error) => {
+        console.error('Error logging out:', error);
+      });
+  }
 
   useEffect(() => {
+    fetch('https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/user-info', {
+      method: 'GET',
+      credentials: 'include',
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setUser(data); // Update the user state with the response data
+        console.log(data.name, data.email); // Log specific fields
+      })
+      .catch((error) => {
+        console.error('Error fetching user info:', error);
+      });
+
     loadLeafletCSS();
     loadLeafletJS()
       .then((L) => {
         setLeaflet(L);
-  
+
         // Initialize the map
         const map = L.map('map').setView([45.815399, 15.966568], 13);
-  
+
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 19,
         }).addTo(map);
-  
+
         // Display existing reports
         reports.forEach((report) => {
           addMarker(map, report, L);
         });
-  
+
         // Track user's current location and add a red marker
         if (navigator.geolocation) {
           navigator.geolocation.watchPosition(
             (position) => {
               const { latitude, longitude } = position.coords;
               setCurrentLocation([latitude, longitude]);
-  
+
               // Set map view to user's current location
               map.setView([latitude, longitude], 15);
-  
+
               // Add a red marker at the current location
               const redMarker = L.marker([latitude, longitude], {
                 icon: L.icon({
@@ -78,9 +110,9 @@ const IncidentReport = () => {
             { enableHighAccuracy: true }
           );
         }
-  
+
         mapRef.current = map;
-  
+
         return () => map.remove();
       })
       .catch((error) => console.error('Error loading Leaflet:', error));
@@ -91,24 +123,23 @@ const IncidentReport = () => {
       .bindPopup(`
         <strong>${report.type.toUpperCase()}</strong><br>
         ${report.description || 'No description provided.'}<br>
-        ${
-          report.photo
-            ? `<img src="${report.photo}" alt="Incident" style="width:100%;max-width:200px;">`
-            : ''
+        ${report.photo
+          ? `<img src="${report.photo}" alt="Incident" style="width:100%;max-width:200px;">`
+          : ''
         }
       `);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const type = e.target.type.value;
     const description = e.target.description.value;
     const address = e.target.address.value;
     const useCurrentLocation = e.target['use-current-location'].checked;
-  
+
     let lat, lon;
-  
+
     if (useCurrentLocation && currentLocation) {
       [lat, lon] = currentLocation;
     } else if (manualLocation) {
@@ -123,20 +154,20 @@ const IncidentReport = () => {
         return;
       }
     }
-  
+
     const newReport = { type, description, address, latitude: lat, longitude: lon, photo };
     const updatedReports = [...reports, newReport];
     setReports(updatedReports);
     localStorage.setItem('reports', JSON.stringify(updatedReports));
-  
+
     if (mapRef.current) {
       addMarker(mapRef.current, newReport, leaflet);
     }
-  
+
     alert('Incident reported successfully!');
     e.target.reset();
     setPhoto(null);
-  
+
     if (markerRef.current) {
       mapRef.current.removeLayer(markerRef.current);
       markerRef.current = null;
@@ -166,10 +197,10 @@ const IncidentReport = () => {
   };
   const handleCheckboxChange = async (e) => {
     const isChecked = e.target.checked;
-  
+
     if (isChecked && currentLocation) {
       const [lat, lon] = currentLocation;
-  
+
       try {
         const address = await reverseGeocode(lat, lon);
         document.getElementById('address').value = address || 'Unknown Location';
@@ -181,7 +212,7 @@ const IncidentReport = () => {
       document.getElementById('address').value = '';
     }
   };
-  
+
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
@@ -196,7 +227,7 @@ const IncidentReport = () => {
     if (!manualLocationSet) {
       alert('Click on the map to set a location, then drag the marker to fine-tune.');
       setManualLocationSet(true);
-  
+
       mapRef.current.on('click', handleMapClick);
     } else {
       if (markerRef.current) {
@@ -205,10 +236,10 @@ const IncidentReport = () => {
       }
       setManualLocation(null);
       setManualLocationSet(false);
-  
+
       // Clear the address textbox
       document.getElementById('address').value = '';
-  
+
       mapRef.current.off('click', handleMapClick);
     }
   };
@@ -294,7 +325,7 @@ const IncidentReport = () => {
               </button>
             </div>
             <div className="checkbox-group">
-              <input type="checkbox" id="use-current-location" onChange={handleCheckboxChange}/>
+              <input type="checkbox" id="use-current-location" onChange={handleCheckboxChange} />
               <label htmlFor="use-current-location">Use Current Location</label>
             </div>
           </div>
@@ -310,6 +341,9 @@ const IncidentReport = () => {
 
       <footer>
         <p>&copy; 2024 Crisis Guard. All rights reserved.</p>
+        {user ? (
+          <button onClick={logout}>Log out</button>
+        ) : null}
       </footer>
     </div>
   );
