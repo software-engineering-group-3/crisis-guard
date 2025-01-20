@@ -15,20 +15,24 @@ public class CheckRole {
     }
 
     public boolean isUser(OAuth2User principal) {
-        var role = userRepository.getUserRole(principal.getAttribute("email"));
+        var role = getRole(principal);
 
         return role.equals("ROLE_USER") || role.equals("ROLE_AUTHORITY") || role.equals("ROLE_ORGANIZATION");
     }
 
     public boolean isAuthority(OAuth2User principal) {
-        var role = userRepository.getUserRole(principal.getAttribute("email"));
+        var role = getRole(principal);
 
         return role.equals("ROLE_AUTHORITY") || role.equals("ROLE_ORGANIZATION");
     }
 
     public boolean isOrganization(OAuth2User principal) {
-        var role = userRepository.getUserRole(principal.getAttribute("email"));
+        var role = getRole(principal);
 
         return role.equals("ROLE_ORGANIZATION");
+    }
+
+    public String getRole(OAuth2User principal) {
+        return userRepository.getUserRole(principal.getAttribute("email"));
     }
 }

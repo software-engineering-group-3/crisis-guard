@@ -8,7 +8,6 @@ import com.crisisguard.crisisguard.models.Report;
 import com.crisisguard.crisisguard.models.Severity;
 import com.crisisguard.crisisguard.repository.PlaceRepository;
 import com.crisisguard.crisisguard.repository.ReportRepository;
-import com.crisisguard.crisisguard.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,9 +50,8 @@ class ReportControllerTests {
 	// Tests if the controller checks for existence of a Place before updating it
 	@Test
 	void updatePlace() throws Exception {
-		when(checkRole.isOrganization(any())).thenReturn(true);
-
 		var placeController = new PlaceController(placeRepository, checkRole);
+		when(checkRole.isOrganization(user)).thenReturn(true);
 
 		Place placeOld = new Place(
 				"55.7558 N, 37.6176 E",
@@ -62,6 +60,7 @@ class ReportControllerTests {
 				10000,
 				"Test place"
 		);
+
 		when(placeRepository.getPlace("55.7558 N, 37.6176 E")).thenReturn(placeOld);
 
 		placeController.updatePlace(new Place(
@@ -84,9 +83,8 @@ class ReportControllerTests {
 	// Tests if the controller successfully deletes a Place
 	@Test
 	void deletePlace() {
-		when(checkRole.isOrganization(any())).thenReturn(true);
-
 		var placeController = new PlaceController(placeRepository, checkRole);
+		when(checkRole.isOrganization(user)).thenReturn(true);
 
 		Place place = new Place(
 				"55.7558 N, 37.6176 E",
@@ -95,6 +93,7 @@ class ReportControllerTests {
 				10000,
 				"Test place"
 		);
+
 		when(placeRepository.getPlace("55.7558 N, 37.6176 E")).thenReturn(place);
 
 		placeController.deletePlace("55.7558 N, 37.6176 E", user);

@@ -39,11 +39,7 @@ public class DisasterController {
     /** Read **/
 
     @GetMapping("/{time_start}/{coords}/{type_dis_id}")
-    public Disaster getDisaster(@PathVariable String time_start, @PathVariable String coords, @PathVariable String type_dis_id, @AuthenticationPrincipal OAuth2User user) {
-        if (!checkRole.isAuthority(user)) {
-            throw new ResponseStatusException(HttpStatusCode.valueOf(403), "You are not authorized to perform this action");
-        }
-
+    public Disaster getDisaster(@PathVariable String time_start, @PathVariable String coords, @PathVariable String type_dis_id) {
         var disaster = disasterRepository.getDisaster(Date.valueOf(time_start), coords, type_dis_id);
 
         if (disaster == null) {
