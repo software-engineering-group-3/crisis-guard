@@ -1,6 +1,7 @@
 package com.crisisguard.crisisguard.controller;
 
 import com.crisisguard.crisisguard.auth.CheckRole;
+import com.crisisguard.crisisguard.models.Token;
 import com.crisisguard.crisisguard.repository.TokenRepository;
 import com.crisisguard.crisisguard.service.FCMService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,17 +42,25 @@ public class NotificationController {
 
     /** Save a new token for push notifications **/
     @PostMapping("/subscribe")
-    public String subscribe(@RequestParam String token) {
+    public String subscribe(@RequestParam String token, @AuthenticationPrincipal OAuth2User user) {
+        if (!checkRole.isUser(user)) {
+            throw new ResponseStatusException(HttpStatusCode.valueOf(403), "You are not authorized to perform this action");
+        }
+
         // Save the token in the database
-        tokenRepository.saveToken(token);
+        tokenRepository.saveToken(new Token(user.getAttribute("email"), token));
         return "Token saved successfully!";
     }
 
     /** Remove a token from push notifications **/
     @PostMapping("/unsubscribe")
-    public String unsubscribe(@RequestParam String token) {
+    public String unsubscribe(@RequestParam String token, @AuthenticationPrincipal OAuth2User user) {
+        if (!checkRole.isUser(user)) {
+            throw new ResponseStatusException(HttpStatusCode.valueOf(403), "You are not authorized to perform this action");
+        }
+
         // Remove the token from the database
-        tokenRepository.deleteToken(token);
+        tokenRepository.deleteTokenByEmail(user.getAttribute("email"));
         return "Token removed successfully!";
     }
 }

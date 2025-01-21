@@ -20,9 +20,10 @@ public class TokenRepository {
     }
 
     /** Save a new token in the database **/
-    public void saveToken(String token) {
-        jdbcClient.sql("INSERT INTO fcm_tokens (token) VALUES (?)")
-                .param(token)
+    public void saveToken(Token token) {
+        jdbcClient.sql("INSERT INTO fcm_tokens (email, token) VALUES (?, ?)")
+                .param(token.email())
+                .param(token.token())
                 .update();
     }
 
@@ -35,6 +36,7 @@ public class TokenRepository {
 
     public Token getTokenModelFromDB(Map<String, Object> dbRepresentation) {
         return new Token(
+                (String) dbRepresentation.get("email"),
                 (String) dbRepresentation.get("token")
         );
     }
@@ -51,9 +53,9 @@ public class TokenRepository {
     }
 
     /** Delete a token from the database **/
-    public void deleteToken(String token) {
-        jdbcClient.sql("DELETE FROM fcm_tokens WHERE token = ?")
-                .param(token)
+    public void deleteTokenByEmail(String email) {
+        jdbcClient.sql("DELETE FROM fcm_tokens WHERE email = ?")
+                .param(email)
                 .update();
     }
 }
