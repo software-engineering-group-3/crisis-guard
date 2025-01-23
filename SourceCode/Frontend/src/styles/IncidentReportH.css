@@ -1,0 +1,113 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5dc;
+    color: #333;
+  }
+  
+  header {
+    background-color: #2e8b57;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+  }
+  
+  header h1 {
+    margin: 0;
+  }
+  
+  #map-container {
+    width: 100%;
+    height: 70vh;
+    margin-bottom: 20px;
+  }
+  
+  .forms-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  form {
+    background-color: white;
+    border: 2px solid #0b4513;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  form h2 {
+    color: #2e8b57;
+  }
+  
+  .form-group {
+    margin-bottom: 10px;
+  }
+  
+  button {
+    background-color: #2e8b57;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #24693d;
+  }
+  .priority-button {
+    padding: 5px 10px;
+    margin: 5px 2px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+  }
+  
+  .priority-button:hover {
+    opacity: 0.9;
+  }
+  
+  .red-button {
+    background-color: #d9534f; /* Red */
+  }
+  
+  .orange-button {
+    background-color: #f0ad4e; /* Orange */
+  }
+  
+  .green-button {
+    background-color: #5cb85c; /* Green */
+  }
+  
+  .accept-button {
+    background-color: #0275d8;
+    color: white;
+    padding: 5px 10px;
+    margin: 5px 2px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .accept-button:hover {
+    background-color: #025aa5;
+  }
+  
+  .reject-button {
+    background-color: #d9534f;
+    color: white;
+    padding: 5px 10px;
+    margin: 5px 2px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .reject-button:hover {
+    background-color: #c9302c;
+  }
+  
