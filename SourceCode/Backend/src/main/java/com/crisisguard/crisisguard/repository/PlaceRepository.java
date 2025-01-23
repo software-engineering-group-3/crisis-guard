@@ -6,7 +6,9 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 public class PlaceRepository {
@@ -45,6 +47,18 @@ public class PlaceRepository {
         catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    public List<Place> getPlaces() {
+            try {
+                var results = jdbcClient.sql("SELECT * FROM disaster")
+                        .query().listOfRows();
+
+                // Convert the list to a list of Disaster objects
+                return results.stream().map(this::getPlaceModelFromDB).collect(Collectors.toList());
+            } catch (EmptyResultDataAccessException e) {
+                return List.of();
+            }
     }
 
     public Place getPlaceFromReport(Report report) {

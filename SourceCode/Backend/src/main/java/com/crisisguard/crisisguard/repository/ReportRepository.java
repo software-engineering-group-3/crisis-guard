@@ -98,6 +98,19 @@ public class ReportRepository {
         }
     }
 
+    public List<Report> getReports() {
+        try {
+            var results = jdbcClient.sql("SELECT * FROM report")
+                    .query().listOfRows();
+
+            // Convert the list to a list of Report objects
+            return results.stream().map(this::getReportModelFromDB).collect(Collectors.toList());
+        }
+        catch (EmptyResultDataAccessException e) {
+            return List.of();
+        }
+    }
+
     /** Update **/
 
     public void updateReport(Report report) {

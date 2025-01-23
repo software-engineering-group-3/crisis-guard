@@ -78,6 +78,11 @@ public class ReportController {
         return reports;
     }
 
+    @GetMapping("/")
+    public List<Report> getReports() {
+        return reportRepository.getReports();
+    }
+
     /** Update **/
 
     @PutMapping("/update")

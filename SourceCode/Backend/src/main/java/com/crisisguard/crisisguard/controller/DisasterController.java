@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/disaster")
@@ -37,6 +38,11 @@ public class DisasterController {
     }
 
     /** Read **/
+
+    @GetMapping("/")
+    public List<Disaster> getDisasters() {
+        return disasterRepository.getDisasters();
+    }
 
     @GetMapping("/{time_start}/{coords}/{type_dis_id}")
     public Disaster getDisaster(@PathVariable String time_start, @PathVariable String coords, @PathVariable String type_dis_id) {

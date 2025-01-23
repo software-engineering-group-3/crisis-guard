@@ -8,7 +8,9 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 public class DisasterRepository {
@@ -49,6 +51,19 @@ public class DisasterRepository {
         }
         catch (EmptyResultDataAccessException e) {
             return null;
+        }
+    }
+
+    public List<Disaster> getDisasters() {
+        try {
+            var results = jdbcClient.sql("SELECT * FROM disaster")
+                    .query().listOfRows();
+
+            // Convert the list to a list of Disaster objects
+            return results.stream().map(this::getDisasterModelFromDB).collect(Collectors.toList());
+        }
+        catch (EmptyResultDataAccessException e) {
+            return List.of();
         }
     }
 

@@ -58,6 +58,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/login/process").permitAll()
+                        .requestMatchers("/report/").permitAll()
+                        .requestMatchers("/disaster/").permitAll()
+                        .requestMatchers("/place/").permitAll()
                         .requestMatchers("/report/*/*/*/*").permitAll()
                         .requestMatchers("/report/byUser/*").permitAll()
                         .requestMatchers("/report/bySeverity/*").permitAll()
