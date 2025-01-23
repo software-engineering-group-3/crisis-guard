@@ -1,89 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles/Login.css';
-import config from './config';
 
 function Login() {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate(); // Hook for navigation
   const handleGoogleLogin = async () => {
-    // Construct the OAuth 2.0 URL for Google's authorization
-    const authUrl = `https://accounts.google.com/o/oauth2/auth?` +
-      `client_id=${GOOGLE_CLIENT_ID}&` + 
-      `redirect_uri=http://localhost:8080/login/oauth2/code/google&` +  // Ensure this matches your redirect URI in Google API settings
-      `response_type=code&` + 
-      `scope=profile%20email`;
-
-    // Redirect to Google OAuth authorization page
-    window.location.href = authUrl;
+    // Redirect to the backend's auth endpoint
+    window.location.href = 'https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/';
   };
 
-  // Optional: Function for handling the callback once the user is redirected back to your app
-  const handleOAuthCallback = async (authorizationCode) => {
-    const tokenUrl = 'https://oauth2.googleapis.com/token';
-    const params = {
-      //code: authorizationCode,
-      client_id: GOOGLE_CLIENT_ID,
-      client_secret: GOOGLE_CLIENT_SECRET,  // Replace with your actual client secret
-      redirect_uri: 'http://localhost:8080/login/oauth2/code/google',  // Should match your redirect URI in Google API settings
-      //grant_type: 'authorization_code',
-    };
-
-    try {
-      // Exchange the authorization code for an access token
-      const response = await axios.post(tokenUrl, params);
-      const accessToken = response.data.access_token;
-
-      // Use the access token to get user profile information
-      const profileResponse = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-
-      const userProfile = profileResponse.data;
-      console.log(userProfile); // Handle the user's profile data
-
-      // Send the token to your backend
-      const backendResponse = await axios.post('https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/', { token: accessToken });
-
-      if (backendResponse.status === 200) {
-        const { userType } = backendResponse.data;
-
-        // Redirect based on user type
-        switch (userType) {
-          case 'anonymous':
-            navigate('/mapsAnon');
-            break;
-          case 'regular':
-            navigate('/mapsLogUser');
-            break;
-          case 'humanitary':
-            navigate('/mapsHuma');
-            break;
-          case 'goverment':
-            navigate('/mapsGove');
-            break;
-          default:
-            console.error('Unknown user type.');
-            navigate('/');
-        }
-      } else {
-        console.error('Login failed:', backendResponse.data);
-      }
-    } catch (error) {
-      console.error('Error during login:', error);
-    }
-  };
-
-  // Check if we are in the callback route and handle OAuth response
-  React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const authorizationCode = urlParams.get('code');
-
-    if (authorizationCode) {
-      handleOAuthCallback(authorizationCode);
-    }
-  }, []);
-
+  // Note: all oauth handling and role-based auth is done in *backend* routes and passed to front-end
 
   return (
     <div>
