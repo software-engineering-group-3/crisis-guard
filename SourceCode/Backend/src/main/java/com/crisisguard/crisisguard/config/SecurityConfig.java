@@ -76,7 +76,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000/", "http://https://crisis-guard-frontend-d4ce1dc3fa0e.herokuapp.com/")); // Allow React frontend
+        configuration.setAllowedOrigins(List.of("http://localhost:3000/", "http://crisis-guard-frontend-d4ce1dc3fa0e.herokuapp.com/")); // Allow React frontend
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allow specific HTTP methods
         configuration.setAllowedHeaders(List.of("*")); // Allow all headers
         configuration.setAllowCredentials(true); // Allow cookies and credentials
