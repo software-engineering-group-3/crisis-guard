@@ -220,6 +220,8 @@ function addMarker(report) {
 
 // Geocoding function to fetch latitude and longitude from an address
 async function geocodeAddress(address) {
+    console.log(" This is hte address:")
+    console.log(address);
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
     const response = await fetch(url);
     const data = await response.json();
@@ -233,6 +235,20 @@ async function geocodeAddress(address) {
 document.getElementById('report-form').addEventListener('submit', async function (e) {
     e.preventDefault(); // Prevent page refresh
 
+    
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('report-form');
+    if (!form) {
+        console.error('Form element not found');
+        return;
+    }
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        console.log('Submit event triggered');
     // Get data from the form
     const type = document.getElementById('type').value;
     const description = document.getElementById('description').value;
@@ -294,4 +310,8 @@ document.getElementById('report-form').addEventListener('submit', async function
     // Alert the user
     alert('Incident reported successfully!');
     document.getElementById('report-form').reset(); // Clear the form
+        alert('Incident reported successfully!');
+    });
+
+    console.log('Event listener attached');
 });
