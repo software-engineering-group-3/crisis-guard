@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './styles/MapsForm.css';
 
-// Function to dynamically load Leaflet CSS
 const loadLeafletCSS = () => {
   const link = document.createElement('link');
   link.rel = 'stylesheet';
@@ -11,7 +10,6 @@ const loadLeafletCSS = () => {
   document.head.appendChild(link);
 };
 
-// Function to dynamically load Leaflet JS
 const loadLeafletJS = () => {
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
@@ -20,16 +18,16 @@ const loadLeafletJS = () => {
     script.crossOrigin = '';
     script.async = true;
 
-    script.onload = () => resolve(window.L); // Leaflet attaches itself to window.L
+    script.onload = () => resolve(window.L);
     script.onerror = () => reject(new Error('Failed to load Leaflet JS'));
     document.body.appendChild(script);
   });
 };
 
-const IncidentReport = () => {
+const IncidentReportU = () => {
   const mapRef = useRef(null);
   const markerRef = useRef(null);
-  const [reports, setReports] = useState(() => JSON.parse(localStorage.getItem('reports')) || []);
+  const [reports, setReports] = useState([]);
   const [manualLocation, setManualLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [photo, setPhoto] = useState(null);
@@ -41,74 +39,29 @@ const IncidentReport = () => {
     loadLeafletJS()
       .then((L) => {
         setLeaflet(L);
-  
-        // Initialize the map
+
         const map = L.map('map').setView([45.815399, 15.966568], 13);
-  
-        // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 19,
         }).addTo(map);
-  
-        // Display existing reports
-        reports.forEach((report) => {
-          addMarker(map, report, L);
-        });
-  
-        // Track user's current location and add a red marker
-        if (navigator.geolocation) {
-          navigator.geolocation.watchPosition(
-            (position) => {
-              const { latitude, longitude } = position.coords;
-              setCurrentLocation([latitude, longitude]);
-  
-              // Set map view to user's current location
-              map.setView([latitude, longitude], 15);
-  
-              // Add a red marker at the current location
-              const redMarker = L.marker([latitude, longitude], {
-                icon: L.icon({
-                  iconUrl: 'https://cdn-icons-png.flaticon.com/512/252/252025.png', // Example red marker icon
-                  iconSize: [30, 30],
-                }),
-              }).addTo(map);
-              redMarker.bindPopup('You are here').openPopup();
-            },
-            (error) => console.error('Geolocation error:', error.message),
-            { enableHighAccuracy: true }
-          );
-        }
-  
+
         mapRef.current = map;
-  
+
         return () => map.remove();
       })
       .catch((error) => console.error('Error loading Leaflet:', error));
-  }, [reports]);
-  const addMarker = (map, report, L) => {
-    L.marker([report.latitude, report.longitude])
-      .addTo(map)
-      .bindPopup(`
-        <strong>${report.type.toUpperCase()}</strong><br>
-        ${report.description || 'No description provided.'}<br>
-        ${
-          report.photo
-            ? `<img src="${report.photo}" alt="Incident" style="width:100%;max-width:200px;">`
-            : ''
-        }
-      `);
-  };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const type = e.target.type.value;
     const description = e.target.description.value;
     const address = e.target.address.value;
     const useCurrentLocation = e.target['use-current-location'].checked;
-  
+
     let lat, lon;
-  
+
     if (useCurrentLocation && currentLocation) {
       [lat, lon] = currentLocation;
     } else if (manualLocation) {
@@ -123,20 +76,33 @@ const IncidentReport = () => {
         return;
       }
     }
-  
+
     const newReport = { type, description, address, latitude: lat, longitude: lon, photo };
-    const updatedReports = [...reports, newReport];
-    setReports(updatedReports);
-    localStorage.setItem('reports', JSON.stringify(updatedReports));
-  
-    if (mapRef.current) {
-      addMarker(mapRef.current, newReport, leaflet);
+
+    try {
+      const response = await fetch('https://crisisguard-backend-server.azuremicroservices.io/api/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newReport),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit report');
+      }
+
+      const savedReport = await response.json();
+      setReports((prevReports) => [...prevReports, savedReport]);
+      alert('Incident reported successfully!');
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      alert('Failed to submit the report. Please try again.');
     }
-  
-    alert('Incident reported successfully!');
+
     e.target.reset();
     setPhoto(null);
-  
+
     if (markerRef.current) {
       mapRef.current.removeLayer(markerRef.current);
       markerRef.current = null;
@@ -164,12 +130,22 @@ const IncidentReport = () => {
     }
     throw new Error('Unable to fetch address');
   };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setPhoto(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCheckboxChange = async (e) => {
     const isChecked = e.target.checked;
-  
+
     if (isChecked && currentLocation) {
       const [lat, lon] = currentLocation;
-  
+
       try {
         const address = await reverseGeocode(lat, lon);
         document.getElementById('address').value = address || 'Unknown Location';
@@ -181,22 +157,12 @@ const IncidentReport = () => {
       document.getElementById('address').value = '';
     }
   };
-  
-
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => setPhoto(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleManualLocation = () => {
     if (!manualLocationSet) {
       alert('Click on the map to set a location, then drag the marker to fine-tune.');
       setManualLocationSet(true);
-  
+
       mapRef.current.on('click', handleMapClick);
     } else {
       if (markerRef.current) {
@@ -205,10 +171,9 @@ const IncidentReport = () => {
       }
       setManualLocation(null);
       setManualLocationSet(false);
-  
-      // Clear the address textbox
+
       document.getElementById('address').value = '';
-  
+
       mapRef.current.off('click', handleMapClick);
     }
   };
@@ -294,16 +259,18 @@ const IncidentReport = () => {
               </button>
             </div>
             <div className="checkbox-group">
-              <input type="checkbox" id="use-current-location" onChange={handleCheckboxChange}/>
+              <input
+                type="checkbox"
+                id="use-current-location"
+                onChange={handleCheckboxChange}
+              />
               <label htmlFor="use-current-location">Use Current Location</label>
             </div>
           </div>
-
           <div className="form-group">
             <label htmlFor="photo">Attach Photo:</label>
             <input type="file" id="photo" name="photo" onChange={handlePhotoChange} />
           </div>
-
           <button type="submit">Submit Report</button>
         </form>
       </section>
@@ -315,10 +282,7 @@ const IncidentReport = () => {
   );
 };
 
-export default IncidentReport;
-
-
-
+export default IncidentReportU;
 
 
 
