@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Map from "./components/Map";
 import IncidentCreationForm from "./components/IncidentCreationForm";
 import IncidentDetailsForm from "./components/IncidentDetailsForm";
@@ -8,40 +8,94 @@ function IncidentReportG() {
   const [map, setMapInstance] = useState(null);
   const [selectedIncident, setSelectedIncident] = useState(null);
   const [formCoordinates, setFormCoordinates] = useState(null); // For adding new markers
-  const [incidents, setIncidents] = useState([
-    {
-      id: 1,
-      latitude: 51.505,
-      longitude: -0.09,
-      type: "Flood",
-      description: "Severe flooding in the area.",
-      additionalInfo: "",
-    },
-    {
-      id: 2,
-      latitude: 51.515,
-      longitude: -0.1,
-      type: "Fire",
-      description: "Large wildfire reported.",
-      additionalInfo: "",
-    },
-  ]);
+  const [incidents, setIncidents] = useState([]);
+  const [reports, setReports] = useState([]); // State for reports
 
-  const handleAddIncident = (newIncident) => {
-    setIncidents((prevIncidents) => [
-      ...prevIncidents,
-      { ...newIncident, id: prevIncidents.length + 1 }, // Auto-generate an ID
-    ]);
-    setFormCoordinates(null); // Clear coordinates after adding
+  const INCIDENTS_API_URL = "https://crisisguard-backend-server.azuremicroservices.io/api/incidents";
+  const REPORTS_API_URL = "https://crisisguard-backend-server.azuremicroservices.io/api/reports";
+
+  // Fetch incidents from the backend
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const response = await fetch(INCIDENTS_API_URL);
+        if (!response.ok) {
+          throw new Error("Failed to fetch incidents");
+        }
+        const data = await response.json();
+        setIncidents(data);
+      } catch (error) {
+        console.error("Error fetching incidents:", error.message);
+      }
+    };
+
+    fetchIncidents();
+  }, []);
+
+  // Fetch reports from the backend
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await fetch(REPORTS_API_URL);
+        if (!response.ok) {
+          throw new Error("Failed to fetch reports");
+        }
+        const data = await response.json();
+        setReports(data);
+      } catch (error) {
+        console.error("Error fetching reports:", error.message);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  // Add a new incident and send it to the backend
+  const handleAddIncident = async (newIncident) => {
+    try {
+      const response = await fetch(INCIDENTS_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newIncident),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add incident");
+      }
+
+      const createdIncident = await response.json();
+      setIncidents((prevIncidents) => [...prevIncidents, createdIncident]);
+      setFormCoordinates(null); // Clear coordinates after adding
+    } catch (error) {
+      console.error("Error adding incident:", error.message);
+    }
   };
 
-  const handleSaveDetails = (incidentId, additionalInfo) => {
-    setIncidents((prevIncidents) =>
-      prevIncidents.map((incident) =>
-        incident.id === incidentId ? { ...incident, additionalInfo } : incident
-      )
-    );
-    setSelectedIncident(null); // Clear the form after saving
+  // Save additional details for an incident (via /api/reports)
+  const handleSaveDetails = async (incidentId, additionalInfo) => {
+    try {
+      const reportPayload = { incidentId, additionalInfo };
+
+      const response = await fetch(REPORTS_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reportPayload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save report details");
+      }
+
+      const createdReport = await response.json();
+      setReports((prevReports) => [...prevReports, createdReport]);
+      setSelectedIncident(null); // Clear the form after saving
+    } catch (error) {
+      console.error("Error saving report details:", error.message);
+    }
   };
 
   return (

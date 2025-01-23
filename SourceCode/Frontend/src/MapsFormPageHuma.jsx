@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Map from "./components/MapH";
 import ShelterForm from "./components/ShelterForm";
 import IncidentDetailsForm from "./components/IncidentDetailsFormH";
@@ -7,43 +7,71 @@ import "./styles/IncidentReportH.css";
 function IncidentReportH() {
   const [map, setMapInstance] = useState(null);
   const [selectedIncident, setSelectedIncident] = useState(null);
-  const [incidents, setIncidents] = useState([
-    {
-      id: 1,
-      latitude: 51.505,
-      longitude: -0.09,
-      type: "Flood",
-      description: "Severe flooding reported.",
-      additionalInfo: "",
-      priority: "red",
-    },
-    {
-      id: 2,
-      latitude: 51.515,
-      longitude: -0.1,
-      type: "Fire",
-      description: "Major wildfire reported.",
-      additionalInfo: "Evacuation in progress.",
-      priority: "orange",
-    },
-    {
-      id: 3,
-      latitude: 51.525,
-      longitude: -0.11,
-      type: "Earthquake",
-      description: "Tremors felt in the area.",
-      additionalInfo: "",
-      priority: "green",
-    },
-  ]);
+  const [incidents, setIncidents] = useState([]);
+  const [reports, setReports] = useState([]); // State for reports
 
-  const handleSaveDetails = (incidentId, additionalInfo) => {
-    setIncidents((prevIncidents) =>
-      prevIncidents.map((incident) =>
-        incident.id === incidentId ? { ...incident, additionalInfo } : incident
-      )
-    );
-    setSelectedIncident(null); // Clear the form after saving
+  const INCIDENTS_API_URL = "https://crisisguard-backend-server.azuremicroservices.io/api/incidents";
+  const REPORTS_API_URL = "https://crisisguard-backend-server.azuremicroservices.io/api/reports";
+
+  // Fetch incidents from the backend
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const response = await fetch(INCIDENTS_API_URL);
+        if (!response.ok) {
+          throw new Error("Failed to fetch incidents");
+        }
+        const data = await response.json();
+        setIncidents(data);
+      } catch (error) {
+        console.error("Error fetching incidents:", error.message);
+      }
+    };
+
+    fetchIncidents();
+  }, []);
+
+  // Fetch reports from the backend
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await fetch(REPORTS_API_URL);
+        if (!response.ok) {
+          throw new Error("Failed to fetch reports");
+        }
+        const data = await response.json();
+        setReports(data);
+      } catch (error) {
+        console.error("Error fetching reports:", error.message);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  // Save additional details for an incident (via /api/reports)
+  const handleSaveDetails = async (incidentId, additionalInfo) => {
+    try {
+      const reportPayload = { incidentId, additionalInfo };
+
+      const response = await fetch(REPORTS_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reportPayload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save report details");
+      }
+
+      const createdReport = await response.json();
+      setReports((prevReports) => [...prevReports, createdReport]);
+      setSelectedIncident(null); 
+    } catch (error) {
+      console.error("Error saving report details:", error.message);
+    }
   };
 
   return (
