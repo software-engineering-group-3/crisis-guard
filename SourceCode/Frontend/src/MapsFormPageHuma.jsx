@@ -8,10 +8,10 @@ function IncidentReportH() {
   const [map, setMapInstance] = useState(null);
   const [selectedIncident, setSelectedIncident] = useState(null);
   const [incidents, setIncidents] = useState([]);
-  const [reports, setReports] = useState([]); // State for reports
+  const [reports, setReports] = useState([]); 
 
-  const INCIDENTS_API_URL = "https://crisisguard-backend-server.azuremicroservices.io/api/incidents";
-  const REPORTS_API_URL = "https://crisisguard-backend-server.azuremicroservices.io/api/reports";
+  const INCIDENTS_API_URL = "https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/disaster/";
+  const REPORTS_API_URL = "https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/report/";
 
   // Fetch incidents from the backend
   useEffect(() => {

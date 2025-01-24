@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles/Login.css';
-import config from './config';
 
 function Login() {
   const [showModal, setShowModal] = useState(false);
@@ -107,7 +106,7 @@ function Login() {
 </a>
         </p>
         <p className="anonymous-link">
-          Or continue as <a href="./mapsAnon">Anonymous User</a>.
+          Or continue as <a href="./mapsHuma">Anonymous User</a>.
         </p>
       </div>
 

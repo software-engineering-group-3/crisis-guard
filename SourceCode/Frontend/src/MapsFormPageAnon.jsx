@@ -30,7 +30,6 @@ const IncidentReportA = () => {
   const [reports, setReports] = useState([]);
   const [manualLocation, setManualLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
-  const [photo, setPhoto] = useState(null);
   const [manualLocationSet, setManualLocationSet] = useState(false);
   const [leaflet, setLeaflet] = useState(null);
 
@@ -39,15 +38,12 @@ const IncidentReportA = () => {
     loadLeafletJS()
       .then((L) => {
         setLeaflet(L);
-
         const map = L.map('map').setView([45.815399, 15.966568], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 19,
         }).addTo(map);
 
         mapRef.current = map;
-
-        return () => map.remove();
       })
       .catch((error) => console.error('Error loading Leaflet:', error));
   }, []);
@@ -77,31 +73,41 @@ const IncidentReportA = () => {
       }
     }
 
-    const newReport = { type, description, address, latitude: lat, longitude: lon, photo };
+    const newReport = {
+      type,
+      description,
+      address,
+      latitude: lat,
+      longitude: lon,
+      photo: null, // Always set to null for anonymous users
+    };
 
     try {
-      const response = await fetch('https://crisisguard-backend-server.azuremicroservices.io/api/reports', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newReport),
-      });
+      const response = await fetch(
+        "https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/report/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newReport),
+          mode: "cors" // Ensures the request uses CORS
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to submit report');
+        throw new Error("Failed to submit report");
       }
 
       const savedReport = await response.json();
       setReports((prevReports) => [...prevReports, savedReport]);
-      alert('Incident reported successfully!');
+      alert("Incident reported successfully!");
     } catch (error) {
-      console.error('Error submitting report:', error);
-      alert('Failed to submit the report. Please try again.');
+      console.error("Error submitting report:", error);
+      alert("Failed to submit the report. Please try again.");
     }
 
     e.target.reset();
-    setPhoto(null);
 
     if (markerRef.current) {
       mapRef.current.removeLayer(markerRef.current);
@@ -116,7 +122,7 @@ const IncidentReportA = () => {
     const response = await fetch(url);
     const data = await response.json();
     if (!data.length) {
-      throw new Error('Address not found');
+      throw new Error("Address not found");
     }
     return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
   };
@@ -128,21 +134,31 @@ const IncidentReportA = () => {
     if (data && data.display_name) {
       return data.display_name;
     }
-    throw new Error('Unable to fetch address');
+    throw new Error("Unable to fetch address");
   };
 
   const handleCheckboxChange = async (e) => {
     const isChecked = e.target.checked;
 
-    if (isChecked && currentLocation) {
-      const [lat, lon] = currentLocation;
-
-      try {
-        const address = await reverseGeocode(lat, lon);
-        document.getElementById('address').value = address || 'Unknown Location';
-      } catch (error) {
-        document.getElementById('address').value = 'Unable to fetch address';
-        console.error('Reverse geocoding error:', error.message);
+    if (isChecked) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            setCurrentLocation([latitude, longitude]);
+            try {
+              const address = await reverseGeocode(latitude, longitude);
+              document.getElementById('address').value = address || 'Unknown Location';
+            } catch (error) {
+              document.getElementById('address').value = 'Unable to fetch address';
+            }
+          },
+          (error) => {
+            alert('Geolocation failed: ' + error.message);
+          }
+        );
+      } else {
+        alert('Geolocation is not supported by this browser.');
       }
     } else {
       document.getElementById('address').value = '';
@@ -151,10 +167,10 @@ const IncidentReportA = () => {
 
   const handleManualLocation = () => {
     if (!manualLocationSet) {
-      alert('Click on the map to set a location, then drag the marker to fine-tune.');
+      alert("Click on the map to set a location, then drag the marker to fine-tune.");
       setManualLocationSet(true);
 
-      mapRef.current.on('click', handleMapClick);
+      mapRef.current.on("click", handleMapClick);
     } else {
       if (markerRef.current) {
         mapRef.current.removeLayer(markerRef.current);
@@ -165,7 +181,7 @@ const IncidentReportA = () => {
 
       document.getElementById('address').value = '';
 
-      mapRef.current.off('click', handleMapClick);
+      mapRef.current.off("click", handleMapClick);
     }
   };
 
@@ -178,14 +194,14 @@ const IncidentReportA = () => {
 
     const marker = leaflet.marker([lat, lng], { draggable: true }).addTo(mapRef.current);
 
-    marker.on('dragend', async (e) => {
+    marker.on("dragend", async (e) => {
       const { lat, lng } = e.target.getLatLng();
       setManualLocation([lat, lng]);
       try {
         const address = await reverseGeocode(lat, lng);
-        document.getElementById('address').value = address || 'Unknown Location';
+        document.getElementById("address").value = address || "Unknown Location";
       } catch {
-        document.getElementById('address').value = 'Unknown Location';
+        document.getElementById("address").value = "Unknown Location";
       }
     });
 
@@ -194,91 +210,80 @@ const IncidentReportA = () => {
 
     try {
       const address = await reverseGeocode(lat, lng);
-      document.getElementById('address').value = address || 'Unknown Location';
+      document.getElementById("address").value = address || "Unknown Location";
     } catch {
-      document.getElementById('address').value = 'Unknown Location';
+      document.getElementById("address").value = "Unknown Location";
     }
   };
 
   return (
     <div>
-      <header>
-        <h1>Crisis Guard</h1>
-      </header>
+    <header>
+      <h1>Crisis Guard</h1>
+    </header>
 
-      <div id="map-container">
-        <div id="map"></div>
-      </div>
-
-      <section id="controls">
-        <h2>Report an Incident</h2>
-        <form id="report-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="type">Type of Incident:</label>
-            <select id="type" name="type">
-              <option value="fire">Fire</option>
-              <option value="flood">Flood</option>
-              <option value="earthquake">Earthquake</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="description">Description:</label>
-            <textarea
-              id="description"
-              name="description"
-              placeholder="Enter incident details"
-            ></textarea>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="address">Address:</label>
-            <div className="address-group">
-              <input
-                type="text"
-                id="address"
-                name="address"
-                placeholder="Enter address"
-              />
-              <button
-                type="button"
-                id="manual-location-button"
-                onClick={handleManualLocation}
-              >
-                {manualLocationSet ? 'Clear Location' : 'Set Location Manually'}
-              </button>
-            </div>
-            <div className="checkbox-group">
-              <input
-                type="checkbox"
-                id="use-current-location"
-                onChange={handleCheckboxChange}
-              />
-              <label htmlFor="use-current-location">Use Current Location</label>
-            </div>
-          </div>
-
-          <button type="submit">Submit Report</button>
-        </form>
-      </section>
-
-      <footer>
-        <p>&copy; 2024 Crisis Guard. All rights reserved.</p>
-      </footer>
+    <div id="map-container">
+      <div id="map"></div>
     </div>
+
+    <section id="controls">
+      <h2>Report an Incident</h2>
+      <form id="report-form" onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="type">Type of Incident:</label>
+          <select id="type" name="type">
+            <option value="fire">Fire</option>
+            <option value="flood">Flood</option>
+            <option value="earthquake">Earthquake</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="description">Description:</label>
+          <textarea
+            id="description"
+            name="description"
+            placeholder="Enter incident details"
+          ></textarea>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="address">Address:</label>
+          <div className="address-group">
+            <input
+              type="text"
+              id="address"
+              name="address"
+              placeholder="Enter address"
+            />
+            <button
+              type="button"
+              id="manual-location-button"
+              onClick={handleManualLocation}
+            >
+              {manualLocationSet ? 'Clear Location' : 'Set Location Manually'}
+            </button>
+          </div>
+          <div className="checkbox-group">
+            <input
+              type="checkbox"
+              id="use-current-location"
+              onChange={handleCheckboxChange}
+            />
+            <label htmlFor="use-current-location">Use Current Location</label>
+          </div>
+        </div>
+        <button type="submit">Submit Report</button>
+      </form>
+    </section>
+
+    <footer>
+      <p>&copy; 2024 Crisis Guard. All rights reserved.</p>
+    </footer>
+  </div>
+    
   );
 };
 
 export default IncidentReportA;
-
-
-
-
-
-
-
-
-
-
-

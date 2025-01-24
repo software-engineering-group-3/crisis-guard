@@ -50,7 +50,7 @@ const Map = ({ setFormCoordinates, incidents, setIncidents, setSelectedIncident,
   useEffect(() => {
     if (mapRef.current) return; // Prevent map re-initialization
 
-    const map = L.map("map").setView([51.505, -0.09], 13);
+    const map = L.map("map").setView([45.815399, 15.966568], 13);
     mapRef.current = map;
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -133,13 +133,20 @@ const Map = ({ setFormCoordinates, incidents, setIncidents, setSelectedIncident,
         map.removeLayer(markersRef.current[incident.id]);
       }
 
-      // Add a new marker with updated priority
+      /*// Add a new marker with updated priority
       const marker = L.marker([incident.latitude, incident.longitude], {
         icon: markerIcons[incident.priority || "default"],
       }).addTo(map);
+*/
+const lat = incident.latitude;
+  const lng = incident.longitude;
 
+  if (lat != null && lng != null && !isNaN(lat) && !isNaN(lng)) {
+    const marker = L.marker([lat, lng], {
+      icon: markerIcons[incident.priority || "default"],
+    }).addTo(map);
       markersRef.current[incident.id] = marker; // Track the marker by incident ID
-
+ 
       const renderPopupContent = () => `
         <strong>${incident.type}</strong><br>
         ${incident.description}
@@ -207,8 +214,8 @@ const Map = ({ setFormCoordinates, incidents, setIncidents, setSelectedIncident,
             setIncidents((prev) => prev.filter((inc) => inc.id !== incident.id));
             map.removeLayer(marker);
           });
-      });
-    });
+      });}else{console.error("Invalid coordinates for incident:", incident);}
+    }); 
   }, [incidents, setIncidents, setSelectedIncident]);
 
   return <div id="map" style={{ width: "100%", height: "500px" }}></div>;
