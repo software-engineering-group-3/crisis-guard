@@ -61,7 +61,7 @@ function Login() {
       const formData = new FormData();
       formData.append('token', token);
 
-      const response = await fetch('https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/notifications/unsubscribe', {
+      const response = await fetch('https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/api/notifications/unsubscribe', {
         method: 'POST',
         body: formData,
       });
