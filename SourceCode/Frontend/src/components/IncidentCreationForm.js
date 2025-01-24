@@ -42,15 +42,19 @@ const IncidentCreationForm = ({ onAddIncident, formCoordinates, setFormCoordinat
       }
     }
 
-    const incidentData = {
-      type,
-      description,
-      address: coordinates.address || "Unknown Location",
-      latitude: coordinates.lat,
-      longitude: coordinates.lng,
-      photo: photo ? URL.createObjectURL(photo) : null,
-    };
-
+    const incidentData = new FormData(); // Use FormData for handling file uploads
+    incidentData.append("type", type);
+    incidentData.append("description", description);
+    incidentData.append("address", coordinates.address || "Unknown Location");
+    incidentData.append("latitude", coordinates.lat);
+    incidentData.append("longitude", coordinates.lng);
+  
+    // Only append the photo if it exists
+    if (photo) {
+      incidentData.append("photo", photo);
+    }
+  
+    // Pass the FormData object to the parent function
     onAddIncident(incidentData);
 
     // Reset form

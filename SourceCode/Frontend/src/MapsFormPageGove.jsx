@@ -11,8 +11,8 @@ function IncidentReportG() {
   const [incidents, setIncidents] = useState([]);
   const [reports, setReports] = useState([]); // State for reports
 
-  const INCIDENTS_API_URL = "http://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/disaster/";
-  const REPORTS_API_URL = "http://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/report/";
+  const INCIDENTS_API_URL = "https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/disaster/";
+  const REPORTS_API_URL = "https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/report/";
 
   // Fetch incidents from the backend
   useEffect(() => {
@@ -53,12 +53,10 @@ function IncidentReportG() {
   // Add a new incident and send it to the backend
   const handleAddIncident = async (newIncident) => {
     const { time_end, time_start, severity, area_size, coords, type_dis_id } = newIncident;
-
     if (!coords || typeof coords.lat !== "number" || typeof coords.lng !== "number") {
-      console.error("Invalid coordinates provided for the incident.");
+      console.error("Invalid coordinates provided for the report.");
       return;
     }
-
     const incidentPayload = {
       time_end,
       time_start,
@@ -93,12 +91,10 @@ function IncidentReportG() {
   const handleSaveDetails = async (incidentId, additionalInfo) => {
     const { report_severity, desc_report, photo, usr_id, time_start, coords, type_dis_id } =
       additionalInfo;
-
       if (!coords || typeof coords.lat !== "number" || typeof coords.lng !== "number") {
-        console.error("Invalid coordinates provided for the incident.");
+        console.error("Invalid coordinates provided for the report.");
         return;
       }
-
     const reportPayload = {
       report_severity,
       desc_report,
