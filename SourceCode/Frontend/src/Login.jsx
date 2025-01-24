@@ -13,7 +13,7 @@ function Login() {
   const navigate = useNavigate(); // Hook for navigation
   const handleGoogleLogin = async () => {
     // Redirect to the backend's auth endpoint
-    window.location.href = 'https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/';
+    window.location.href = 'https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/oauth2/authorization/google';
   };
 
   // Note: all oauth handling and role-based auth is done in *backend* routes and passed to front-end
