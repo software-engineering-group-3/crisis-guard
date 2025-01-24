@@ -15,7 +15,7 @@ public class UserRepository {
 
     public String getUserRole(String email) {
         try {
-            var result = jdbcClient.sql("SELECT role FROM user WHERE email = ?")
+            var result = jdbcClient.sql("SELECT role FROM userdata WHERE email = ?")
                     .param(email)
                     .query().singleRow();
 
