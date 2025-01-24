@@ -57,19 +57,15 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/login/process").permitAll()
-                        .requestMatchers("/report/").permitAll()
-                        .requestMatchers("/disaster/").permitAll()
-                        .requestMatchers("/place/").permitAll()
-                        .requestMatchers("/report/*/*/*/*").permitAll()
-                        .requestMatchers("/report/byUser/*").permitAll()
-                        .requestMatchers("/report/bySeverity/*").permitAll()
-                        .requestMatchers("/report/dateRange/*/*").permitAll()
-                        .requestMatchers("/disaster/*/*/*").permitAll()
-                        .requestMatchers("/place/*").permitAll()
-                        .requestMatchers("/api/notifications/unsubscribe").permitAll()
-                        .requestMatchers("/api/notifications/subscribe").permitAll()
-                        .anyRequest().authenticated()  // All others require authentication
+                        .requestMatchers("/report/update").authenticated() 
+                        .requestMatchers("/report/delete/*/*/*/*").authenticated() 
+                        .requestMatchers("/place/update").authenticated() 
+                        .requestMatchers("/place/create").authenticated() 
+                        .requestMatchers("/place/delete/*").authenticated() 
+                        .requestMatchers("/disaster/create").authenticated() 
+                        .requestMatchers("/disaster/update").authenticated() 
+                        .requestMatchers("/disaster/delete/*/*/*").authenticated() 
+                        .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .defaultSuccessUrl("/redirect", true)  // Redirect after login
