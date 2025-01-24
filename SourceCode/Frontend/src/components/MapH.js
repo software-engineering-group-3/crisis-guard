@@ -40,7 +40,7 @@ const MapH = ({ setFormCoordinates, incidents, setIncidents, setSelectedIncident
   useEffect(() => {
     if (mapRef.current) return;
 
-    const map = L.map("map").setView([51.505, -0.09], 13);
+    const map = L.map("map").setView([45.815399, 15.966568], 13);
     mapRef.current = map;
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -57,7 +57,10 @@ const MapH = ({ setFormCoordinates, incidents, setIncidents, setSelectedIncident
       if (markersRef.current[incident.id]) {
         map.removeLayer(markersRef.current[incident.id]);
       }
+      const lat = incident.latitude;
+  const lng = incident.longitude;
 
+      if (lat != null && lng != null && !isNaN(lat) && !isNaN(lng)) {
       const marker = L.marker([incident.latitude, incident.longitude], {
         icon: markerIcons[incident.priority || "default"],
       }).addTo(map);
@@ -121,7 +124,7 @@ const MapH = ({ setFormCoordinates, incidents, setIncidents, setSelectedIncident
             setIncidents((prev) => prev.filter((inc) => inc.id !== incident.id));
             map.removeLayer(marker);
           });
-      });
+      });}else{console.error("Invalid coordinates for incident:", incident);}
     });
   }, [incidents, setIncidents, setSelectedIncident]);
 

@@ -55,13 +55,12 @@ const IncidentReportU = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const type = e.target.type.value;
-    const description = e.target.description.value;
+    const type_dis_id = e.target.type.value;
+    const desc_report = e.target.description.value;
     const address = e.target.address.value;
     const useCurrentLocation = e.target['use-current-location'].checked;
 
     let lat, lon;
-
     if (useCurrentLocation && currentLocation) {
       [lat, lon] = currentLocation;
     } else if (manualLocation) {
@@ -77,15 +76,29 @@ const IncidentReportU = () => {
       }
     }
 
-    const newReport = { type, description, address, latitude: lat, longitude: lon, photo };
+    const coords = `${lat},${lon}`;
+    const report_severity = 'Moderate'; // Replace with a dynamic severity mapping if needed
+    const time_start = new Date().toISOString(); // Current timestamp
+    const usr_id = 1; // Replace with the logged-in user ID if available
+
+    const newReport = {
+      report_severity,
+      desc_report,
+      photo,
+      usr_id,
+      time_start,
+      coords,
+      type_dis_id,
+    };
 
     try {
-      const response = await fetch('https://crisisguard-backend-server.azuremicroservices.io/api/reports', {
+      const response = await fetch('https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/report/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(newReport),
+        mode: "cors" // Ensures the request uses CORS
       });
 
       if (!response.ok) {
@@ -111,12 +124,37 @@ const IncidentReportU = () => {
     }
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setPhoto(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleManualLocation = () => {
+    if (!manualLocationSet) {
+      alert('Click on the map to set a location, then drag the marker to fine-tune.');
+      setManualLocationSet(true);
+      mapRef.current.on('click', handleMapClick);
+    } else {
+      if (markerRef.current) {
+        mapRef.current.removeLayer(markerRef.current);
+        markerRef.current = null;
+      }
+      setManualLocation(null);
+      setManualLocationSet(false);
+      mapRef.current.off('click', handleMapClick);
+    }
+  };
+
   const geocodeAddress = async (address) => {
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
     const response = await fetch(url);
     const data = await response.json();
     if (!data.length) {
-      throw new Error('Address not found');
+      throw new Error("Address not found");
     }
     return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
   };
@@ -128,56 +166,36 @@ const IncidentReportU = () => {
     if (data && data.display_name) {
       return data.display_name;
     }
-    throw new Error('Unable to fetch address');
-  };
-
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => setPhoto(reader.result);
-      reader.readAsDataURL(file);
-    }
+    throw new Error("Unable to fetch address");
   };
 
   const handleCheckboxChange = async (e) => {
     const isChecked = e.target.checked;
 
-    if (isChecked && currentLocation) {
-      const [lat, lon] = currentLocation;
-
-      try {
-        const address = await reverseGeocode(lat, lon);
-        document.getElementById('address').value = address || 'Unknown Location';
-      } catch (error) {
-        document.getElementById('address').value = 'Unable to fetch address';
-        console.error('Reverse geocoding error:', error.message);
+    if (isChecked) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            setCurrentLocation([latitude, longitude]);
+            try {
+              const address = await reverseGeocode(latitude, longitude);
+              document.getElementById('address').value = address || 'Unknown Location';
+            } catch (error) {
+              document.getElementById('address').value = 'Unable to fetch address';
+            }
+          },
+          (error) => {
+            alert('Geolocation failed: ' + error.message);
+          }
+        );
+      } else {
+        alert('Geolocation is not supported by this browser.');
       }
     } else {
       document.getElementById('address').value = '';
     }
   };
-
-  const handleManualLocation = () => {
-    if (!manualLocationSet) {
-      alert('Click on the map to set a location, then drag the marker to fine-tune.');
-      setManualLocationSet(true);
-
-      mapRef.current.on('click', handleMapClick);
-    } else {
-      if (markerRef.current) {
-        mapRef.current.removeLayer(markerRef.current);
-        markerRef.current = null;
-      }
-      setManualLocation(null);
-      setManualLocationSet(false);
-
-      document.getElementById('address').value = '';
-
-      mapRef.current.off('click', handleMapClick);
-    }
-  };
-
   const handleMapClick = async (event) => {
     const { lat, lng } = event.latlng;
 
@@ -187,26 +205,13 @@ const IncidentReportU = () => {
 
     const marker = leaflet.marker([lat, lng], { draggable: true }).addTo(mapRef.current);
 
-    marker.on('dragend', async (e) => {
+    marker.on('dragend', (e) => {
       const { lat, lng } = e.target.getLatLng();
       setManualLocation([lat, lng]);
-      try {
-        const address = await reverseGeocode(lat, lng);
-        document.getElementById('address').value = address || 'Unknown Location';
-      } catch {
-        document.getElementById('address').value = 'Unknown Location';
-      }
     });
 
     markerRef.current = marker;
     setManualLocation([lat, lng]);
-
-    try {
-      const address = await reverseGeocode(lat, lng);
-      document.getElementById('address').value = address || 'Unknown Location';
-    } catch {
-      document.getElementById('address').value = 'Unknown Location';
-    }
   };
 
   return (
@@ -267,6 +272,7 @@ const IncidentReportU = () => {
               <label htmlFor="use-current-location">Use Current Location</label>
             </div>
           </div>
+
           <div className="form-group">
             <label htmlFor="photo">Attach Photo:</label>
             <input type="file" id="photo" name="photo" onChange={handlePhotoChange} />
@@ -283,12 +289,3 @@ const IncidentReportU = () => {
 };
 
 export default IncidentReportU;
-
-
-
-
-
-
-
-
-

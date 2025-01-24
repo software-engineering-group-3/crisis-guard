@@ -99,7 +99,7 @@ function Login() {
           </a>
         </p>
         <p className="anonymous-link">
-          Or continue as <a href="./mapsAnon">Anonymous User</a>.
+          Or continue as <a href="./mapsHuma">Anonymous User</a>.
         </p>
         <button onClick={requestNotificationPermission} style={{ marginBottom: '10px' }}>
           Enable Push Notifications

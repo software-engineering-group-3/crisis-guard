@@ -11,8 +11,8 @@ function IncidentReportG() {
   const [incidents, setIncidents] = useState([]);
   const [reports, setReports] = useState([]); // State for reports
 
-  const INCIDENTS_API_URL = "https://crisisguard-backend-server.azuremicroservices.io/api/incidents";
-  const REPORTS_API_URL = "https://crisisguard-backend-server.azuremicroservices.io/api/reports";
+  const INCIDENTS_API_URL = "https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/disaster/";
+  const REPORTS_API_URL = "https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/report/";
 
   // Fetch incidents from the backend
   useEffect(() => {
@@ -52,13 +52,24 @@ function IncidentReportG() {
 
   // Add a new incident and send it to the backend
   const handleAddIncident = async (newIncident) => {
+    const { time_end, time_start, severity, area_size, coords, type_dis_id } = newIncident;
+
+    const incidentPayload = {
+      time_end,
+      time_start,
+      severity,
+      area_size,
+      coords: `${coords.lat},${coords.lng}`,
+      type_dis_id,
+    };
+
     try {
       const response = await fetch(INCIDENTS_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(newIncident),
+        body: JSON.stringify(incidentPayload),
       });
 
       if (!response.ok) {
@@ -75,9 +86,20 @@ function IncidentReportG() {
 
   // Save additional details for an incident (via /api/reports)
   const handleSaveDetails = async (incidentId, additionalInfo) => {
-    try {
-      const reportPayload = { incidentId, additionalInfo };
+    const { report_severity, desc_report, photo, usr_id, time_start, coords, type_dis_id } =
+      additionalInfo;
 
+    const reportPayload = {
+      report_severity,
+      desc_report,
+      photo,
+      usr_id,
+      time_start,
+      coords: `${coords.lat},${coords.lng}`,
+      type_dis_id,
+    };
+
+    try {
       const response = await fetch(REPORTS_API_URL, {
         method: "POST",
         headers: {
@@ -133,3 +155,4 @@ function IncidentReportG() {
 }
 
 export default IncidentReportG;
+
