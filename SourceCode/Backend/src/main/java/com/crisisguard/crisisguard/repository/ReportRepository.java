@@ -27,7 +27,7 @@ public class ReportRepository {
         }
 
         jdbcClient.sql("INSERT INTO report VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-                .param(report.report_severity())
+                .param(report.report_severity().ordinal())
                 .param(report.desc_report())
                 .param(report.photo())
                 .param(report.usr_id())
@@ -119,7 +119,7 @@ public class ReportRepository {
         }
 
         jdbcClient.sql("UPDATE report SET report_severity = ?, desc_report = ?, photo = ? WHERE usr_id = ? AND time_start = ? AND coords = ? AND type_dis_id = ?")
-                .param(report.report_severity())
+                .param(report.report_severity().ordinal())
                 .param(report.desc_report())
                 .param(report.photo())
                 .param(report.usr_id())

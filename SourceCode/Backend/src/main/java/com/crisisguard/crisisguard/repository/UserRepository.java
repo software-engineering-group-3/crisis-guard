@@ -22,7 +22,7 @@ public class UserRepository {
             return result.get("role").toString();
         }
         catch (Exception e) {
-            return "ROLE_NONE";
+            return "ROLE_USER";
         }
     }
 }
