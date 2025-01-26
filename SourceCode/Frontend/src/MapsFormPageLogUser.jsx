@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import Map from './components/Map';
 import './styles/MapsForm.css';
 
 const loadLeafletCSS = () => {
@@ -25,14 +26,19 @@ const loadLeafletJS = () => {
 };
 
 const IncidentReportU = () => {
-  const mapRef = useRef(null);
   const markerRef = useRef(null);
+  const [map, setMapInstance] = useState(null);
+  const [selectedIncident, setSelectedIncident] = useState(null);
   const [reports, setReports] = useState([]);
   const [manualLocation, setManualLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [photo, setPhoto] = useState(null);
   const [manualLocationSet, setManualLocationSet] = useState(false);
   const [leaflet, setLeaflet] = useState(null);
+  const [incidents, setIncidents] = useState([]);
+
+  const INCIDENTS_API_URL = "https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/disaster/";
+  const REPORTS_API_URL = "https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/report/";
 
   useEffect(() => {
     loadLeafletCSS();
@@ -52,6 +58,42 @@ const IncidentReportU = () => {
       .catch((error) => console.error('Error loading Leaflet:', error));
   }, []);
 
+  // Fetch incidents from the backend
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const response = await fetch(INCIDENTS_API_URL);
+        if (!response.ok) {
+          throw new Error("Failed to fetch incidents");
+        }
+        const data = await response.json();
+        setIncidents(data);
+      } catch (error) {
+        console.error("Error fetching incidents:", error.message);
+      }
+    };
+
+    fetchIncidents();
+  }, []);
+
+  // Fetch reports from the backend
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await fetch(REPORTS_API_URL);
+        if (!response.ok) {
+          throw new Error("Failed to fetch reports");
+        }
+        const data = await response.json();
+        setReports(data);
+      } catch (error) {
+        console.error("Error fetching reports:", error.message);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -62,9 +104,11 @@ const IncidentReportU = () => {
 
     let lat, lon;
     if (useCurrentLocation && currentLocation) {
-      [lat, lon] = currentLocation;
+      lat = currentLocation.lat;
+      lon = currentLocation.lng;
     } else if (manualLocation) {
-      [lat, lon] = manualLocation;
+      lat = manualLocation.lat;
+      lon = manualLocation.lng;
     } else {
       try {
         const location = await geocodeAddress(address);
@@ -76,15 +120,17 @@ const IncidentReportU = () => {
       }
     }
 
-    const coords = `${lat},${lon}`;
-    const report_severity = 'Moderate'; // Replace with a dynamic severity mapping if needed
+    const coords = `${lat}, ${lon}`;
+    const report_severity = 3; // Replace with a dynamic severity mapping if needed
     const time_start = new Date().toISOString(); // Current timestamp
     const usr_id = 1; // Replace with the logged-in user ID if available
+
+    var photo_validated = photo ? photo : "no photo";
 
     const newReport = {
       report_severity,
       desc_report,
-      photo,
+      photo: photo_validated,
       usr_id,
       time_start,
       coords,
@@ -92,7 +138,7 @@ const IncidentReportU = () => {
     };
 
     try {
-      const response = await fetch('https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/report/', {
+      const response = await fetch('https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/report/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,9 +150,6 @@ const IncidentReportU = () => {
       if (!response.ok) {
         throw new Error('Failed to submit report');
       }
-
-      const savedReport = await response.json();
-      setReports((prevReports) => [...prevReports, savedReport]);
       alert('Incident reported successfully!');
     } catch (error) {
       console.error('Error submitting report:', error);
@@ -137,15 +180,15 @@ const IncidentReportU = () => {
     if (!manualLocationSet) {
       alert('Click on the map to set a location, then drag the marker to fine-tune.');
       setManualLocationSet(true);
-      mapRef.current.on('click', handleMapClick);
+      map.on('click', handleMapClick);
     } else {
       if (markerRef.current) {
-        mapRef.current.removeLayer(markerRef.current);
+        map.removeLayer(markerRef.current);
         markerRef.current = null;
       }
       setManualLocation(null);
       setManualLocationSet(false);
-      mapRef.current.off('click', handleMapClick);
+      map.off('click', handleMapClick);
     }
   };
 
@@ -200,10 +243,10 @@ const IncidentReportU = () => {
     const { lat, lng } = event.latlng;
 
     if (markerRef.current) {
-      mapRef.current.removeLayer(markerRef.current);
+      map.removeLayer(markerRef.current);
     }
 
-    const marker = leaflet.marker([lat, lng], { draggable: true }).addTo(mapRef.current);
+    const marker = leaflet.marker([lat, lng], { draggable: true }).addTo(map);
 
     marker.on('dragend', (e) => {
       const { lat, lng } = e.target.getLatLng();
@@ -221,7 +264,14 @@ const IncidentReportU = () => {
       </header>
 
       <div id="map-container">
-        <div id="map"></div>
+        <Map
+            setFormCoordinates={setManualLocation}
+            setMapInstance={setMapInstance}
+            incidents={incidents}
+            setIncidents={setIncidents}
+            setSelectedIncident={setSelectedIncident}
+            reports={reports}
+          />
       </div>
 
       <section id="controls">
