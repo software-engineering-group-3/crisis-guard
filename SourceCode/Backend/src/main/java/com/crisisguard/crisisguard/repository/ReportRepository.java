@@ -26,7 +26,7 @@ public class ReportRepository {
             throw new IllegalArgumentException("Report already exists");
         }
 
-        jdbcClient.sql("INSERT INTO report VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+        jdbcClient.sql("INSERT INTO report VALUES (?, ?, ?, ?, ?, ?, ?)")
                 .param(report.report_severity().ordinal())
                 .param(report.desc_report())
                 .param(report.photo())
