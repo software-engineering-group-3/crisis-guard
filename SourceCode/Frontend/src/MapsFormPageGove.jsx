@@ -51,8 +51,8 @@ function IncidentReportG() {
   }, []);
 
   // Add a new incident and send it to the backend
-  const handleAddIncident = async (newIncident) => {
-    const { time_end, time_start, severity, area_size, coords, type_dis_id } = newIncident;
+  /*const handleAddIncident = async (newIncident) => {
+    const {type_dis_id, time_end, time_start, severity, area_size, coords  } = newIncident;
     if (!coords || typeof coords.lat !== "number" || typeof coords.lng !== "number") {
       console.error("Invalid coordinates provided for the report.");
       return;
@@ -86,13 +86,51 @@ function IncidentReportG() {
       console.error("Error adding incident:", error.message);
     }
   };
+*/
+const handleAddIncident = async (newIncident) => {
+  const { type_dis_id, time_end, time_start, severity, area_size, coords } = newIncident;
 
+  // Validate coordinates
+  if (!coords || typeof coords.lat !== "number" || typeof coords.lng !== "number") {
+    return;
+  }
+
+  // Ensure the format of `coords` is correct
+  const incidentPayload = {
+    time_end,
+    time_start,
+    severity,
+    area_size,
+    coords: `${coords.lat},${coords.lng}`, // Properly format coordinates as a string
+    type_dis_id,
+  };
+
+  try {
+    const response = await fetch(INCIDENTS_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(incidentPayload), // Send as JSON
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to add incident");
+    }
+
+    const createdIncident = await response.json();
+    setIncidents((prevIncidents) => [...prevIncidents, createdIncident]);
+    setFormCoordinates(null); // Clear coordinates after adding
+  } catch (error) {
+    console.error("Error adding incident:", error.message);
+    alert("Failed to submit the incident. Please try again.");
+  }
+};
   // Save additional details for an incident (via /api/reports)
   const handleSaveDetails = async (incidentId, additionalInfo) => {
     const { report_severity, desc_report, photo, usr_id, time_start, coords, type_dis_id } =
       additionalInfo;
       if (!coords || typeof coords.lat !== "number" || typeof coords.lng !== "number") {
-        console.error("Invalid coordinates provided for the report.");
         return;
       }
     const reportPayload = {
@@ -161,4 +199,3 @@ function IncidentReportG() {
 }
 
 export default IncidentReportG;
-

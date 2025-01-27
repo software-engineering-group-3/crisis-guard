@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -10,7 +11,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
-// Custom marker icons
 const markerIcons = {
   red: L.icon({
     iconUrl: require("../assets/marker-icon-red.png"),
@@ -42,7 +42,23 @@ const markerIcons = {
   }),
 };
 
-const Map = ({ setFormCoordinates, incidents, setIncidents, setSelectedIncident, formCoordinates }) => {
+function getIconBySeverity(sev) {
+  switch (sev) {
+    case "VERY_LOW":
+    case "LOW":
+      return markerIcons.red;
+    case "MEDIUM":
+    case "HIGH":
+      return markerIcons.orange;
+    case "VERY_HIGH":
+    case "CRITICAL":
+      return markerIcons.green;
+    default:
+      return markerIcons.default;
+  }
+}
+
+const Map = ({ setMapInstance, setFormCoordinates, incidents, setIncidents, setSelectedIncident, formCoordinates, reports }) => {
   const mapRef = useRef(null);
   const markersRef = useRef({}); // Track markers by incident ID
   const manualMarkerRef = useRef(null);
@@ -52,6 +68,7 @@ const Map = ({ setFormCoordinates, incidents, setIncidents, setSelectedIncident,
 
     const map = L.map("map").setView([45.815399, 15.966568], 13);
     mapRef.current = map;
+    setMapInstance(map);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -99,6 +116,53 @@ const Map = ({ setFormCoordinates, incidents, setIncidents, setSelectedIncident,
   useEffect(() => {
     if (formCoordinates && mapRef.current) {
       const map = mapRef.current;
+  
+      // Remove old manual marker if it exists
+      if (manualMarkerRef.current) {
+        map.removeLayer(manualMarkerRef.current);
+      }
+  
+      // Add or move the manual marker
+      const manualMarker = L.marker([formCoordinates.lat, formCoordinates.lng], {
+        icon: markerIcons.default,
+      }).addTo(map);
+      manualMarkerRef.current = manualMarker;
+  
+      // Handle marker removal on click
+      manualMarker.on("click", () => {
+        map.removeLayer(manualMarker);
+        manualMarkerRef.current = null;
+        setFormCoordinates(null); // Clear form coordinates
+      });
+  
+      // Center the map to the submitted location
+      map.setView([formCoordinates.lat, formCoordinates.lng], 13);
+  
+      // Fetch the address for the clicked location
+      const fetchAddress = async () => {
+        try {
+          const response = await axios.get(
+            `https://nominatim.openstreetmap.org/reverse?lat=${formCoordinates.lat}&lon=${formCoordinates.lng}&format=json`
+          );
+          setFormCoordinates((prev) => ({
+            ...prev,
+            address: response.data.display_name || "Unknown Location",
+          }));
+        } catch (error) {
+          setFormCoordinates((prev) => ({
+            ...prev,
+            address: "Unknown Location",
+          }));
+        }
+      };
+      fetchAddress();
+    }
+  }, [formCoordinates]);
+  
+
+ /* useEffect(() => {
+    if (formCoordinates && mapRef.current) {
+      const map = mapRef.current;
 
       // Add or move the manual marker
       if (manualMarkerRef.current) {
@@ -120,103 +184,96 @@ const Map = ({ setFormCoordinates, incidents, setIncidents, setSelectedIncident,
       // Center the map to the submitted location
       map.setView([formCoordinates.lat, formCoordinates.lng], 13);
     }
-  }, [formCoordinates, setFormCoordinates]);
+  }, [formCoordinates, setFormCoordinates]);*/
 
-  useEffect(() => {
-    if (!mapRef.current) return;
-
+  if (mapRef.current) {
     const map = mapRef.current;
 
-    incidents.forEach((incident) => {
-      // Remove the old marker if it exists
-      if (markersRef.current[incident.id]) {
-        map.removeLayer(markersRef.current[incident.id]);
+    incidents?.forEach((incident) => {
+      const coords = incident.coords?.split(", ");  // Ensure coords exist
+      if (!coords || coords.length !== 2) {
+        console.error("Invalid coordinates format for incident:", incident);
+        return;
       }
-
-      /*// Add a new marker with updated priority
-      const marker = L.marker([incident.latitude, incident.longitude], {
-        icon: markerIcons[incident.priority || "default"],
+    
+      const lat = parseFloat(coords[0]);
+      const lon = parseFloat(coords[1]);
+    
+      if (isNaN(lat) || isNaN(lon)) {
+        console.error("Invalid latitude or longitude for incident:", incident);
+        return;
+      }
+    
+      // If valid coordinates, add marker
+      if (markersRef.current[incident.coords]) {
+        map.removeLayer(markersRef.current[incident.coords]);
+      }
+    
+      const marker = L.marker([lat, lon], {
+        icon: getIconBySeverity(incident.severity),
       }).addTo(map);
-*/
-const lat = incident.latitude;
-  const lng = incident.longitude;
-
-  if (lat != null && lng != null && !isNaN(lat) && !isNaN(lng)) {
-    const marker = L.marker([lat, lng], {
-      icon: markerIcons[incident.priority || "default"],
-    }).addTo(map);
-      markersRef.current[incident.id] = marker; // Track the marker by incident ID
- 
+    
+      markersRef.current[incident.coords] = marker;
+    
       const renderPopupContent = () => `
-        <strong>${incident.type}</strong><br>
-        ${incident.description}
-        ${
-          incident.photo
-            ? `<br><img src="${incident.photo}" alt="Incident Photo" style="width:100px;height:auto;" />`
-            : ""
-        }
-        ${incident.additionalInfo ? `<br><em>Details:</em> ${incident.additionalInfo}` : ""}
-        ${incident.priority ? `<br><strong>Priority:</strong> ${incident.priority}` : ""}
-        <br>
-        <button class="priority-button red-button" data-id="${incident.id}" data-priority="red">Very Dangerous</button>
-        <button class="priority-button orange-button" data-id="${incident.id}" data-priority="orange">Dangerous</button>
-        <button class="priority-button green-button" data-id="${incident.id}" data-priority="green">Not So Dangerous</button>
-        <br>
-        <button class="accept-button" data-id="${incident.id}">Accept</button>
-        <button class="reject-button" data-id="${incident.id}">Reject</button>
+        <strong>${incident.type_dis_id}</strong><br>
+        ${incident.additionalInfo ? `<em>Details:</em> ${incident.additionalInfo}<br>` : ""}
+        <strong>Priority:</strong> ${incident.severity || "None"}<br>
       `;
-
+    
       marker.bindPopup(renderPopupContent());
+    });
+    
 
+    reports?.forEach((report) => {
+      const coords = report.coords?.split(", ");  // Ensure coords exist
+      if (!coords || coords.length !== 2) {
+        console.error("Invalid coordinates format for report:", report);
+        return;
+      }
+    
+      const lat = parseFloat(coords[0]);
+      const lon = parseFloat(coords[1]);
+    
+      if (isNaN(lat) || isNaN(lon)) {
+        console.error("Invalid latitude or longitude for report:", report);
+        return;
+      }
+    
+      // If valid coordinates, add marker
+      if (markersRef.current[report.coords]) {
+        map.removeLayer(markersRef.current[report.coords]);
+      }
+    
+      const marker = L.marker([lat, lon], {
+        icon: markerIcons.default,
+      }).addTo(map);
+    
+      markersRef.current[report.coords] = marker;
+    
+      const renderPopupContent = () => `
+        <strong>Report</strong><br>
+        ${report.desc_report}
+      `;
+    
+      marker.bindPopup(renderPopupContent());
+    
       marker.on("popupopen", () => {
-        // Handle priority updates
-        document
-          .querySelector(`.priority-button.red-button[data-id="${incident.id}"]`)
+        document.querySelector(`.accept-button[data-id="${report.coords}"]`)
           ?.addEventListener("click", () => {
-            setIncidents((prev) =>
-              prev.map((inc) => (inc.id === incident.id ? { ...inc, priority: "red" } : inc))
-            );
-            marker.setIcon(markerIcons.red);
+            setSelectedIncident(incident);  // Assuming `incident` is accessible here
             map.closePopup();
           });
-
-        document
-          .querySelector(`.priority-button.orange-button[data-id="${incident.id}"]`)
+    
+        document.querySelector(`.reject-button[data-id="${report.coords}"]`)
           ?.addEventListener("click", () => {
-            setIncidents((prev) =>
-              prev.map((inc) => (inc.id === incident.id ? { ...inc, priority: "orange" } : inc))
-            );
-            marker.setIcon(markerIcons.orange);
-            map.closePopup();
-          });
-
-        document
-          .querySelector(`.priority-button.green-button[data-id="${incident.id}"]`)
-          ?.addEventListener("click", () => {
-            setIncidents((prev) =>
-              prev.map((inc) => (inc.id === incident.id ? { ...inc, priority: "green" } : inc))
-            );
-            marker.setIcon(markerIcons.green);
-            map.closePopup();
-          });
-
-        // Handle accept and reject buttons
-        document
-          .querySelector(`.accept-button[data-id="${incident.id}"]`)
-          ?.addEventListener("click", () => {
-            setSelectedIncident(incident);
-            map.closePopup();
-          });
-
-        document
-          .querySelector(`.reject-button[data-id="${incident.id}"]`)
-          ?.addEventListener("click", () => {
-            setIncidents((prev) => prev.filter((inc) => inc.id !== incident.id));
+            setIncidents((prev) => prev.filter((inc) => inc.coords !== report.coords));
             map.removeLayer(marker);
           });
-      });}else{console.error("Invalid coordinates for incident:", incident);}
-    }); 
-  }, [incidents, setIncidents, setSelectedIncident]);
+      });
+    });
+    
+  }
 
   return <div id="map" style={{ width: "100%", height: "500px" }}></div>;
 };

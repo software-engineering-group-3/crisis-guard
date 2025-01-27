@@ -5,7 +5,7 @@ const IncidentDetailsFormH = ({ selectedIncident, onSaveDetails }) => {
 
   useEffect(() => {
     if (selectedIncident) {
-      setAdditionalInfo(selectedIncident.additionalInfo || "");
+      setAdditionalInfo(selectedIncident.description || "");
     }
   }, [selectedIncident]);
 
@@ -21,13 +21,10 @@ const IncidentDetailsFormH = ({ selectedIncident, onSaveDetails }) => {
     <form onSubmit={handleSubmit}>
       <h2>Incident Details</h2>
       <div>
-        <strong>Type:</strong> {selectedIncident.type}
-      </div>
-      <div>
-        <strong>Description:</strong> {selectedIncident.description}
+        <strong>Type:</strong> {selectedIncident.type_dis_id}
       </div>
       <div className="form-group">
-        <label>Additional Info:</label>
+        <label>Description:</label>
         <textarea
           value={additionalInfo}
           onChange={(e) => setAdditionalInfo(e.target.value)}
