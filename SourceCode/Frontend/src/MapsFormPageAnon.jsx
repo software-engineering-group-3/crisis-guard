@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import Map from './components/Map';
+import Map from './components/Map.js';
 import './styles/MapsForm.css';
 
 const loadLeafletCSS = () => {
@@ -96,15 +96,15 @@ const IncidentReportU = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const type_dis_id = e.target.type.value;
     const desc_report = e.target.description.value;
     const address = e.target.address.value;
     const useCurrentLocation = e.target['use-current-location'].checked;
-
+  
     let lat, lon;
     if (useCurrentLocation && currentLocation) {
-      lat = currentLocation.lat;
+      lat = currentLocation.lat; // Use currentLocation.lat and currentLocation.lng
       lon = currentLocation.lng;
     } else if (manualLocation) {
       lat = manualLocation.lat;
@@ -119,14 +119,14 @@ const IncidentReportU = () => {
         return;
       }
     }
-
+  
     const coords = `${lat}, ${lon}`;
     const report_severity = 3; // Replace with a dynamic severity mapping if needed
     const time_start = new Date().toISOString(); // Current timestamp
     const usr_id = 1; // Replace with the logged-in user ID if available
-
+  
     var photo_validated = photo ? photo : "no photo";
-
+  
     const newReport = {
       report_severity,
       desc_report,
@@ -136,7 +136,7 @@ const IncidentReportU = () => {
       coords,
       type_dis_id,
     };
-
+  
     try {
       const response = await fetch('https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/report/create', {
         method: 'POST',
@@ -146,7 +146,7 @@ const IncidentReportU = () => {
         body: JSON.stringify(newReport),
         mode: "cors" // Ensures the request uses CORS
       });
-
+  
       if (!response.ok) {
         throw new Error('Failed to submit report');
       }
@@ -155,10 +155,10 @@ const IncidentReportU = () => {
       console.error('Error submitting report:', error);
       alert('Failed to submit the report. Please try again.');
     }
-
+  
     e.target.reset();
     setPhoto(null);
-
+  
     if (markerRef.current) {
       mapRef.current.removeLayer(markerRef.current);
       markerRef.current = null;
@@ -166,16 +166,8 @@ const IncidentReportU = () => {
       setManualLocationSet(false);
     }
   };
-
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => setPhoto(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
-
+  
+  
   const handleManualLocation = () => {
     if (!manualLocationSet) {
       alert('Click on the map to set a location, then drag the marker to fine-tune.');
@@ -214,13 +206,16 @@ const IncidentReportU = () => {
 
   const handleCheckboxChange = async (e) => {
     const isChecked = e.target.checked;
-
+  
     if (isChecked) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude } = position.coords;
-            setCurrentLocation([latitude, longitude]);
+  
+            // Store current location as an object with lat and lng properties
+            setCurrentLocation({ lat: latitude, lng: longitude });
+  
             try {
               const address = await reverseGeocode(latitude, longitude);
               document.getElementById('address').value = address || 'Unknown Location';
@@ -237,6 +232,7 @@ const IncidentReportU = () => {
       }
     } else {
       document.getElementById('address').value = '';
+      setCurrentLocation(null); // Reset the current location when unchecked
     }
   };
   const handleMapClick = async (event) => {
@@ -323,10 +319,6 @@ const IncidentReportU = () => {
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="photo">Attach Photo:</label>
-            <input type="file" id="photo" name="photo" onChange={handlePhotoChange} />
-          </div>
           <button type="submit">Submit Report</button>
         </form>
       </section>

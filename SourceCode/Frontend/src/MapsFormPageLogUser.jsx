@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import Map from './components/Map';
+import Map from './components/Map.js';
 import './styles/MapsForm.css';
 
 const loadLeafletCSS = () => {
@@ -93,7 +93,7 @@ const IncidentReportU = () => {
 
     fetchReports();
   }, []);
-
+/*
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -165,7 +165,81 @@ const IncidentReportU = () => {
       setManualLocation(null);
       setManualLocationSet(false);
     }
+  };*/
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    const type_dis_id = e.target.type.value;
+    const desc_report = e.target.description.value;
+    const address = e.target.address.value;
+    const useCurrentLocation = e.target['use-current-location'].checked;
+  
+    let lat, lon;
+    if (useCurrentLocation && currentLocation) {
+      lat = currentLocation.lat; // Use currentLocation.lat and currentLocation.lng
+      lon = currentLocation.lng;
+    } else if (manualLocation) {
+      lat = manualLocation.lat;
+      lon = manualLocation.lng;
+    } else {
+      try {
+        const location = await geocodeAddress(address);
+        lat = location.lat;
+        lon = location.lon;
+      } catch (error) {
+        alert('Error: ' + error.message);
+        return;
+      }
+    }
+  
+    const coords = `${lat}, ${lon}`;
+    const report_severity = 3; // Replace with a dynamic severity mapping if needed
+    const time_start = new Date().toISOString(); // Current timestamp
+    const usr_id = 1; // Replace with the logged-in user ID if available
+  
+    var photo_validated = photo ? photo : "no photo";
+  
+    const newReport = {
+      report_severity,
+      desc_report,
+      photo: photo_validated,
+      usr_id,
+      time_start,
+      coords,
+      type_dis_id,
+    };
+  
+    try {
+      const response = await fetch('https://crisis-guard-backend-a9cf5dc59b34.herokuapp.com/report/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newReport),
+        mode: "cors" // Ensures the request uses CORS
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to submit report');
+      }
+      alert('Incident reported successfully!');
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      alert('Failed to submit the report. Please try again.');
+    }
+  
+    e.target.reset();
+    setPhoto(null);
+  
+    if (markerRef.current) {
+      mapRef.current.removeLayer(markerRef.current);
+      markerRef.current = null;
+      setManualLocation(null);
+      setManualLocationSet(false);
+    }
   };
+  
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
@@ -214,13 +288,16 @@ const IncidentReportU = () => {
 
   const handleCheckboxChange = async (e) => {
     const isChecked = e.target.checked;
-
+  
     if (isChecked) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude } = position.coords;
-            setCurrentLocation([latitude, longitude]);
+  
+            // Store current location as an object with lat and lng properties
+            setCurrentLocation({ lat: latitude, lng: longitude });
+  
             try {
               const address = await reverseGeocode(latitude, longitude);
               document.getElementById('address').value = address || 'Unknown Location';
@@ -237,8 +314,10 @@ const IncidentReportU = () => {
       }
     } else {
       document.getElementById('address').value = '';
+      setCurrentLocation(null); // Reset the current location when unchecked
     }
   };
+  
   const handleMapClick = async (event) => {
     const { lat, lng } = event.latlng;
 
