@@ -86,6 +86,7 @@ function IncidentReportH() {
             incidents={incidents}
             setIncidents={setIncidents}
             setSelectedIncident={setSelectedIncident}
+            reports={reports}
           />
         </div>
         <div className="forms-container">
